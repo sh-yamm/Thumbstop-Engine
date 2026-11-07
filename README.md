@@ -39,6 +39,33 @@ Every pipeline role has its own line in [`config.yaml`](config.yaml). You can al
 The judge, ranker and fact checker come from **different model families** from the promo finder and caption writer, so no model grades its own work.
 
 ## How it works
+```mermaid
+flowchart LR
+  S["Screenplays<br/>(one .txt per episode)"] --> P["0 · Parse<br/><i>code</i>"]
+  P --> R["1 · Show reference<br/>1 LLM call"]
+  R --> F["2 · Promo finder<br/>1 call per episode"]
+  F --> C{"3 · Rule check<br/><i>code</i>"}
+  C -- "broken rule: back once<br/>with exact measurements" --> F
+  C --> M["4 · Montage<br/>1 call"]
+  M --> J["5 · Judge<br/>1 call per episode"]
+  J --> K{"Select<br/><i>code</i>: best per episode"}
+  K -- "unsafe" --> X["excluded.json"]
+  K --> RK["6 · Ranker<br/>3 shuffled passes"]
+  RK --> CP["7–8 · Captions + fact check"]
+  CP --> O[("promos.csv / .json<br/>report.md")]
+  classDef ai fill:#b5502c,color:#fff,stroke:#8f3c1f;
+  classDef code fill:#f7ede1,color:#2e1f17,stroke:#c9a88c;
+  class R,F,M,J,RK,CP ai;
+  class P,C,K code;
+```
+**What travels between stages:**
+- screenplay lines become **timed events with IDs** (`E012-032 · 44.0–46.4 s`);
+- the whole series becomes the **show reference** (speaker labels → characters, roles, arcs, secrets);
+- each episode becomes **candidates as line-ID ranges**, and code turns them into **segments with timestamps** (episode, start, end);
+- the judge adds **scores**, selection keeps the **best per episode**, the ranker adds a **posting order with a reason**, and the last stage adds **fact-checked captions**.
+
+Timestamps are created once, by code, from line IDs, never by a model.
+
 | # | Stage | Who | What it does |
 |---|---|---|---|
 | 0 | Parse | code | Every screenplay line becomes an event with an ID (`E012-032`), speaker, emotion tags and exact times. Camera changes mark the only legal cut points |
