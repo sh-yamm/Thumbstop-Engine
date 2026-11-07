@@ -32,11 +32,10 @@ Every pipeline role has its own line in [`config.yaml`](config.yaml). You can al
 
 | Role | Model |
 |---|---|
-| Show reference, promo finder, montage, captions | NVIDIA Nemotron 3 Ultra |
-| Judge, ranker | Google Gemma 4 31B |
+| Show reference, promo finder, montage, judge, ranker, captions | NVIDIA Nemotron 3 Ultra |
 | Fact check | Mistral Large 4 (low reasoning effort) |
 
-The judge, ranker and fact checker come from **different model families** from the promo finder and caption writer, so no model grades its own work.
+The judge works blind: it sees only the title and the clips, never the promo finder's reasoning. Step 5 and Gemma 4 judged best in the comparison, but on the free tier they could not finish a full show within the gateway's 15-minute call limit, so Nemotron judges too. On a faster endpoint, set the judge to a **different model family** from the promo finder (one line). The fact check already uses a different family.
 
 ## How it works
 ```mermaid

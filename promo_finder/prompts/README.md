@@ -22,7 +22,7 @@ This README is not sent to any model.
 2. **Each prompt is an agent brief:** role and audience, what it receives, the quality bar, traps seen in testing, a private step-by-step method, a checklist, and a strict JSON contract.
 3. **Show-agnostic.** No prompt contains any show's names or plot. Examples use invented content and placeholder IDs (`E000-…`), so the tool behaves the same on a new show.
 4. **Code verifies what code can verify:** length, the 3-s hook, mid-line cuts, caption length, names and spoiler evidence. The prompts state the same rules only so that fewer repairs are needed.
-5. **No model grades its own work.** The judge, ranker and fact checker are configured from different model families from the promo finder and caption writer. The promo finder doesn't score its own picks.
+5. **The judge works blind, and nobody scores their own picks.** The promo finder returns no self-scores. The judge sees only the title and the clips, never the finder's reasoning. Ideally the judge and ranker run on a different model family from the finder; on NVIDIA's free tier only Nemotron was fast enough to judge a full show, so the shipped config uses it, and a faster endpoint can split them with one config line. The fact checker is a different family (Mistral).
 
 ## Where the rules come from
 | Rule | Reason |
