@@ -33,7 +33,7 @@ Every pipeline role has its own line in [`config.yaml`](config.yaml). You can al
 | Role | Model |
 |---|---|
 | Show reference, promo finder, montage, captions | NVIDIA Nemotron 3 Ultra |
-| Judge, ranker | StepFun Step 5 |
+| Judge, ranker | Google Gemma 4 31B |
 | Fact check | Mistral Large 4 (low reasoning effort) |
 
 The judge, ranker and fact checker come from **different model families** from the promo finder and caption writer, so no model grades its own work.
