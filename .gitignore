@@ -1,0 +1,17 @@
+# Publish only the tool itself; everything else in the working folder (input screenplays, run outputs,
+# secrets, local notes) stays local.
+/*
+!/.gitignore
+!/.env.example
+!/README.md
+!/requirements.txt
+!/config.yaml
+!/promo_finder/
+!/tests/
+/promo_finder/*.py
+!/promo_finder/__init__.py
+!/promo_finder/run.py
+
+__pycache__/
+.pytest_cache/
+.cache/

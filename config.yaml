@@ -1,0 +1,35 @@
+# promo_finder configuration. Swap any model by editing one line here,
+# or with an env var PROMO_MODEL_<ROLE> (e.g. PROMO_MODEL_PROPOSER=openai/gpt-5).
+# Any OpenAI-compatible endpoint works: set PROMO_BASE_URL and the key env var.
+
+api:
+  base_url: https://integrate.api.nvidia.com/v1
+  key_env: NVIDIA_API_KEY
+  rpm: 35            # free tier: ~40 requests/min per account, shared by all models; stay under it
+  max_concurrent: 4  # calls in flight at once (bursts trigger 429s on the free tier); raise on a paid endpoint
+  max_429_wait: 3600 # seconds a call may spend waiting out 429s before it fails
+  timeout: 3600      # latency is not a goal (one-off batch per show); only guards against a dead connection
+  max_retries: 4
+
+cache_dir: .cache
+call_log: outputs/llm_calls.jsonl
+
+roles:
+  # Chosen by comparing several free models per role on the same tasks. The judge, ranker and fact check use
+  # different model families from the promo finder / caption writer, so no model grades its own work.
+  reference:  {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.2, max_tokens: 16000}
+  proposer:   {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.4, max_tokens: 12000}
+  montage:    {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.5, max_tokens: 12000}
+  judge:      {model: stepfun-ai/step-5-preview, temperature: 0.1, max_tokens: 16000}   # scores up to ~6 clips per call
+  ranker:     {model: stepfun-ai/step-5-preview, temperature: 0.2, max_tokens: 16000}
+  captions:   {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.7, max_tokens: 12000}  # hook lines
+  factcheck:  {model: mistralai/mistral-large-4-1t-a52b, temperature: 0.0, max_tokens: 6000,
+               extra_body: {reasoning_effort: low}}
+  # Unset/TBD roles fall back: captions -> proposer, factcheck -> judge, montage -> proposer (promo_finder/llm.py).
+
+pipeline:
+  keep_per_episode: 1   # best promo kept per episode after judging (all of them then go to the ranker)
+  keep_montage: 2       # best cross-episode montages kept
+  rank_runs: 3          # ranker runs in shuffled order, positions averaged (position-bias control)
+  caption_top_k: 20     # hook lines are written for the top N ranked promos
+  caption_batch: 20     # promos per caption call (one batch lets it vary voices across the slate)
