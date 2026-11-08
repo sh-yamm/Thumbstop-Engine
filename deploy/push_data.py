@@ -5,7 +5,7 @@
 Uploads, from this working folder:
     pack/<show>/*.txt     -> pack/<show>/      the screenplays
     outputs/final_run/    -> run/              the delivered full run
-    .cache/               -> cache/            the saved model answers (the demo replays them)
+    .cache/               -> cache.tar.gz      the saved model answers, as one archive (the demo replays them)
 
 The dataset is created private and checked to be private before anything is uploaded.
 """
@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tarfile
+import tempfile
 from pathlib import Path
 
 from huggingface_hub import HfApi
@@ -42,8 +44,15 @@ def main() -> None:
                       commit_message="Screenplays")
     api.upload_folder(repo_id=a.repo, repo_type="dataset", folder_path=run, path_in_repo="run",
                       commit_message="Delivered full run")
-    api.upload_folder(repo_id=a.repo, repo_type="dataset", folder_path=cache, path_in_repo="cache",
-                      commit_message="Saved model answers")
+    # the ~1,000 saved answers go up as one archive, so the app's cold start downloads a few files, not a thousand
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp) / "cache.tar.gz"
+        with tarfile.open(archive, "w:gz") as tar:
+            tar.add(cache, arcname="cache")
+        api.upload_file(repo_id=a.repo, repo_type="dataset", path_or_fileobj=str(archive), path_in_repo="cache.tar.gz",
+                        commit_message="Saved model answers (archive)")
+    if any(f.startswith("cache/") for f in api.list_repo_files(a.repo, repo_type="dataset")):
+        api.delete_folder("cache", repo_id=a.repo, repo_type="dataset", commit_message="Answers now in cache.tar.gz")
     files = api.list_repo_files(a.repo, repo_type="dataset")
     print(f"done: {len(files)} files in {a.repo} (private)")
 
