@@ -6,8 +6,9 @@ Uploads only the tool: thumbstop/, app/, .streamlit/, config.yaml, requirements.
 deploy/space_README.md as the Space's Dockerfile and README. No screenplays: the app downloads them at start-up
 from the private dataset named by the THUMBSTOP_DATA_REPO variable, using the HF_TOKEN secret.
 
---secrets also sets the Space's secrets from this machine: HF_TOKEN (your Hugging Face login, to read the private
-dataset) and NVIDIA_API_KEY (from .env, for live runs). Secrets are never shown to visitors.
+--secrets also sets the Space's secrets from this machine: HF_TOKEN, to read the private dataset (a read-only token
+from THUMBSTOP_SPACE_READ_TOKEN if set, else your Hugging Face login), and NVIDIA_API_KEY (from .env, for live runs).
+Secrets are never shown to visitors.
 """
 from __future__ import annotations
 
@@ -53,7 +54,8 @@ def main() -> None:
         sys.path.insert(0, str(ROOT))
         from thumbstop.config import load_env
         load_env()
-        api.add_space_secret(a.space, "HF_TOKEN", get_token())
+        # Prefer a read-only token for the Space (it only reads the private dataset); else the login token.
+        api.add_space_secret(a.space, "HF_TOKEN", os.environ.get("THUMBSTOP_SPACE_READ_TOKEN") or get_token())
         if os.environ.get("NVIDIA_API_KEY"):
             api.add_space_secret(a.space, "NVIDIA_API_KEY", os.environ["NVIDIA_API_KEY"])
         print("secrets set: HF_TOKEN" + (", NVIDIA_API_KEY" if os.environ.get("NVIDIA_API_KEY") else ""))
