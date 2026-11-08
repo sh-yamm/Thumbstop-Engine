@@ -265,6 +265,17 @@ def downloads(run_dir: Path, key: str) -> None:
                                 width="stretch", icon=":material/download:")
 
 
+def episode_proposals(run_dir: Path, default="–"):
+    """How many promos the promo finder proposed from the episodes: the number its stage box shows (montages are
+    counted in their own box)."""
+    try:
+        with open(Path(run_dir) / "candidates.jsonl", encoding="utf-8") as f:
+            return sum(1 for line in f
+                       if line.strip() and not str(json.loads(line).get("source", "")).startswith("montage"))
+    except (OSError, ValueError):
+        return default
+
+
 def load_json(path: Path, default=None):
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))

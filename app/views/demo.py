@@ -71,7 +71,7 @@ def page() -> None:
             "promos: a hook in the first 3 seconds, a cliffhanger at the end, and sense for a stranger.",
             [("show", summary.get("title", "")), ("episodes", summary.get("episodes", "")),
              ("models", "free tier on NVIDIA")])
-    ui.kpis([(summary.get("candidates", "–"), "promos proposed"), (summary.get("valid", "–"), "met every rule"),
+    ui.kpis([(ui.episode_proposals(p.run_dir), "promos proposed"), (summary.get("valid", "–"), "met every rule"),
              (summary.get("ranked", "–"), "kept and ranked"), (captioned, "with a checked caption"),
              (summary.get("excluded", "–"), "excluded for ad risk"), ("~3 h", "a full run on the free tier")])
 

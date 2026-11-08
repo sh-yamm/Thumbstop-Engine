@@ -78,6 +78,15 @@ def test_failed_run_records_the_error(pack_dir, tmp_path):
     assert r.status == "failed" and "model down" in r.error and not mgr.busy()
 
 
+def test_headline_counts_the_promo_finders_proposals_not_montages(tmp_path):
+    from app import ui
+    rows = [{"source": "ep1"}, {"source": "ep1:repaired"}, {"source": "ep2"}, {"source": "montage"},
+            {"source": "montage:repaired"}]
+    (tmp_path / "candidates.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    assert ui.episode_proposals(tmp_path) == 3
+    assert ui.episode_proposals(tmp_path / "missing") == "–"
+
+
 def test_estimate_grows_with_episodes():
     assert estimate_minutes(2, True, False)[0] < estimate_minutes(10, True, False)[0]
     assert estimate_minutes(2, False, False)[0] > estimate_minutes(2, True, False)[0]

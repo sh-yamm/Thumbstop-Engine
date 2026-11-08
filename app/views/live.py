@@ -136,7 +136,7 @@ def _results(r: runner.LiveRun) -> None:
         return
     s = r.summary or {}
     st.success(f"Finished {when} in {s.get('minutes', round(r.elapsed / 60, 1))} minutes.")
-    ui.kpis([(s.get("candidates", "–"), "promos proposed"), (s.get("valid", "–"), "met every rule"),
+    ui.kpis([(ui.episode_proposals(out), "promos proposed"), (s.get("valid", "–"), "met every rule"),
              (s.get("ranked", "–"), "kept and ranked"), (s.get("captioned", "–"), "captioned")])
     for role, used in (s.get("backups_used") or {}).items():
         st.info(f"{ui.model_name(used['instead_of'])} did not answer, so {ui.model_name(used['model'])} wrote "
