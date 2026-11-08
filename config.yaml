@@ -1,6 +1,6 @@
-# promo_finder configuration. Swap any model by editing one line here,
-# or with an env var PROMO_MODEL_<ROLE> (e.g. PROMO_MODEL_PROPOSER=openai/gpt-5).
-# Any OpenAI-compatible endpoint works: set PROMO_BASE_URL and the key env var.
+# Thumbstop Engine configuration. Swap any model by editing one line here,
+# or with an env var THUMBSTOP_MODEL_<ROLE> (e.g. THUMBSTOP_MODEL_JUDGE=<model id>).
+# Any OpenAI-compatible endpoint works: set api.base_url (or THUMBSTOP_BASE_URL) and the key env var.
 
 api:
   base_url: https://integrate.api.nvidia.com/v1
@@ -11,8 +11,8 @@ api:
   timeout: 3600      # latency is not a goal (one-off batch per show); only guards against a dead connection
   max_retries: 4
 
-cache_dir: .cache
-call_log: outputs/llm_calls.jsonl
+cache_dir: .cache                    # every answer, keyed by a hash of model + settings + messages
+call_log: outputs/llm_calls.jsonl    # one line per real model call: role, model, seconds, tokens, errors
 
 roles:
   # Chosen by comparing several free models per role on the same tasks and keeping the best one for each.
@@ -23,10 +23,13 @@ roles:
   montage:    {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.5, max_tokens: 12000}
   judge:      {model: stepfun-ai/step-5-preview, temperature: 0.1, max_tokens: 12000}   # scores up to ~6 clips per call
   ranker:     {model: nvidia/nemotron-3-ultra-550b-a55b, temperature: 0.2, max_tokens: 12000}
-  captions:   {model: google/gemma-4-31b-it, temperature: 0.7, max_tokens: 12000}  # hook lines
+  captions:   {model: google/gemma-4-31b-it, temperature: 0.7, max_tokens: 12000,   # hook lines
+               backup: nvidia/nemotron-3-ultra-550b-a55b}
+  # backup: the main model gets ONE try; on a server or connection error (NVIDIA answers a model that is down with
+  # a bare 504 after 300 s) the backup answers instead, with the role's settings. Set THUMBSTOP_BACKUP_<ROLE> to override.
   factcheck:  {model: mistralai/mistral-large-4-1t-a52b, temperature: 0.0, max_tokens: 6000,
                extra_body: {reasoning_effort: low}}
-  # Unset/TBD roles fall back: captions -> proposer, factcheck -> judge, montage -> proposer (promo_finder/llm.py).
+  # Unset/TBD roles fall back: captions -> proposer, factcheck -> judge, montage -> proposer (thumbstop/llm/client.py).
 
 pipeline:
   keep_per_episode: 1   # best promo kept per episode after judging (all of them then go to the ranker)

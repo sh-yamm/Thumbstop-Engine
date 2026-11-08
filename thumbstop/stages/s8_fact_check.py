@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 
-from ..llm import LLM
+from ..llm import LLM, CacheMiss
 from ..prompts import load
 from ..rules import check_hook_line
 from ..screenplay.parse import Show, event_index
@@ -104,8 +104,30 @@ def _check_one(llm: LLM, show: Show, title: str, r: dict, reference: dict | None
             r[key]["invalid"] = r[key].get("invalid", []) + ["unsupported claim (fact check)"]
 
 
+def hide_unchecked(r: dict, reason: str) -> None:
+    """Captions are never shown unchecked: mark every still-valid line of this promo invalid."""
+    for key in CAPTION_KEYS:
+        hl = r.get(key)
+        if hl and hl.get("text") and not hl.get("invalid"):
+            hl["invalid"] = [reason]
+
+
+def _check_one_safely(llm: LLM, show: Show, title: str, r: dict, reference: dict | None) -> str | None:
+    """_check_one, but a failed call (e.g. the checker model is down) hides only this promo's captions."""
+    try:
+        _check_one(llm, show, title, r, reference)
+        return None
+    except CacheMiss:      # an offline replay with a gap must stop, not quietly hide captions
+        raise
+    except Exception as e:  # noqa: BLE001
+        r["fact_check_error"] = f"{type(e).__name__}: {e}"[:300]
+        hide_unchecked(r, "not fact-checked (the check failed)")
+        return r["fact_check_error"]
+
+
 def fact_check_captions(llm: LLM, show: Show, title: str, recs: list[dict], reference: dict | None = None,
-                        workers: int = 5) -> None:
-    """Fact-check the captions of several promos in parallel; fixes or hides failing lines in place."""
+                        workers: int = 5) -> list[str]:
+    """Fact-check the captions of several promos in parallel; fixes or hides failing lines in place. Returns the
+    errors of checks that could not run (their promos' captions are hidden)."""
     with ThreadPoolExecutor(workers) as ex:
-        list(ex.map(lambda r: _check_one(llm, show, title, r, reference), recs))
+        return [e for e in ex.map(lambda r: _check_one_safely(llm, show, title, r, reference), recs) if e]

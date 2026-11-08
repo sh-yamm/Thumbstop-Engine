@@ -105,3 +105,48 @@ def test_judge_answer_without_id_matched_by_position(show):
 
     j = judge_batch(NoIdLLM(), show, "T", [rec])[0]
     assert "error" not in j and j["hook"]["score"] == 3 and j["composite"] > 0
+
+
+def _run_with(llm, pack_dir, show, tmp_path):
+    eps = sorted(show)[:2]
+    return run(str(pack_dir), str(tmp_path), title="T", episodes=f"{eps[0]}-{eps[-1]}", montage=False, top_k=5,
+               workers=2, config={"roles": {r: {} for r in ROLES}}, llm=llm, on_progress=lambda s, m: None)
+
+
+def test_caption_failure_still_writes_every_output(pack_dir, show, tmp_path):
+    """A caption model outage must not lose the ranked promos: outputs are written, captions are hidden."""
+    class CaptionsDown(FakeLLM):
+        def chat(self, role, system, user, **kw):
+            if role == "captions":
+                raise RuntimeError("captions call failed: Error code: 504")
+            return super().chat(role, system, user, **kw)
+
+    summary = _run_with(CaptionsDown(), pack_dir, show, tmp_path)
+    final = json.loads((tmp_path / "promos.json").read_text(encoding="utf-8"))
+    assert final and final[0]["rank"] == 1
+    assert "504" in summary["errors"]["captions"]
+    assert (tmp_path / "report.md").exists() and (tmp_path / "promos.csv").exists()
+    from thumbstop.output import caption_of
+    assert all(caption_of(c) == "" for c in final)
+
+
+def test_fact_check_failure_hides_only_that_promos_caption(pack_dir, show, tmp_path):
+    """A caption is never shown unchecked: if its fact-check call fails, that caption is hidden; the rest stand."""
+    class FirstCheckFails(FakeLLM):
+        failed = False
+
+        def chat(self, role, system, user, **kw):
+            if role == "factcheck" and not FirstCheckFails.failed:
+                FirstCheckFails.failed = True
+                raise RuntimeError("factcheck call failed")
+            return super().chat(role, system, user, **kw)
+
+    summary = _run_with(FirstCheckFails(), pack_dir, show, tmp_path)
+    final = json.loads((tmp_path / "promos.json").read_text(encoding="utf-8"))
+    from thumbstop.output import caption_of
+    captioned = [c for c in final if c.get("captioned")]
+    assert len(captioned) >= 2
+    assert sum(1 for c in captioned if c.get("fact_check_error")) == 1
+    assert all(caption_of(c) == "" for c in captioned if c.get("fact_check_error"))
+    assert any(caption_of(c) for c in captioned if not c.get("fact_check_error"))
+    assert summary["errors"]["fact_check"]

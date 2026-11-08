@@ -3,21 +3,36 @@ the answer cache, and a log of every call.
 
 Swapping a model is one line in config.yaml, or an environment variable THUMBSTOP_MODEL_<ROLE>. Any
 OpenAI-compatible provider works (NVIDIA build.nvidia.com, OpenAI, Groq, OpenRouter, vLLM, ...).
+
+A role can name a `backup` model. The main model then gets ONE try: if it fails with a server or connection error
+(NVIDIA answers for a model that is down with a bare 504 after 300 s), the backup answers instead, with no retries
+on the main model. Roles without a backup retry with backoff.
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
 import random
 import threading
 import time
 
-from openai import OpenAI, RateLimitError
+from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
 from ..config import ROOT, load_config, load_env
 from .cache import AnswerCache, CacheMiss
 from .json_reply import extract_json
 from .rate_limit import RateLimiter
+
+log = logging.getLogger("thumbstop.llm")
+
+
+class CallFailed(RuntimeError):
+    """A model call failed after its tries."""
+
+
+class ModelUnavailable(CallFailed):
+    """The model answered with a server error or not at all; with a backup configured we switch without retrying."""
 
 
 class LLM:
@@ -38,8 +53,10 @@ class LLM:
             key = os.environ.get(api["key_env"])
             if not key:
                 raise RuntimeError(f"set {api['key_env']} in the environment or in .env (or run offline from the cache)")
+            # max_retries=0: the OpenAI SDK otherwise retries every 5xx twice, unseen and unlogged, which tripled
+            # each wait on NVIDIA's 300 s gateway timeout. Our own loop below does all the retrying.
             self.client = OpenAI(base_url=os.environ.get("THUMBSTOP_BASE_URL", api["base_url"]), api_key=key,
-                                 timeout=api.get("timeout", 300))
+                                 timeout=api.get("timeout", 300), max_retries=0)
         # THUMBSTOP_RPM lets several processes share the account's requests-per-minute budget.
         self.limiter = RateLimiter(int(os.environ.get("THUMBSTOP_RPM", api.get("rpm", 35))))
         self.retries = api.get("max_retries", 4)
@@ -49,6 +66,8 @@ class LLM:
         self.log_path = ROOT / self.cfg.get("call_log", "outputs/llm_calls.jsonl")
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self._log_lock = threading.Lock()
+        self.backups_used: dict[str, dict] = {}   # role -> {"model", "instead_of", "calls"}; reported in summary.json
+        self.down: set[str] = set()   # main models that failed with a server error this run; skipped where a backup exists
 
     def model_for(self, role: str) -> dict:
         """Role settings, e.g. {'model': ..., 'temperature': ..., 'max_tokens': ...}. THUMBSTOP_MODEL_<ROLE> overrides
@@ -62,26 +81,66 @@ class LLM:
             rc = {**base, **{k: v for k, v in rc.items() if k != "model"}}
         return rc
 
-    def chat(self, role: str, system: str, user: str, *, json_mode: bool = True):
+    def backup_for(self, role: str) -> dict | None:
+        """The role's backup settings, or None. `backup` is a model id (or a dict of settings); it inherits the role's
+        temperature and token budget but not its extra_body, which is model-specific. THUMBSTOP_BACKUP_<ROLE>
+        overrides it."""
         rc = self.model_for(role)
+        b = os.environ.get(f"THUMBSTOP_BACKUP_{role.upper()}") or rc.get("backup")
+        if not b:
+            return None
+        b = {"model": b} if isinstance(b, str) else dict(b)
+        return {**{k: v for k, v in rc.items() if k not in ("model", "backup", "extra_body")}, **b}
+
+    @staticmethod
+    def _params(rc: dict) -> dict:
+        """What is sent to the model and hashed into the cache key (together with extra_body, if any)."""
         params = {"model": rc["model"], "temperature": rc.get("temperature", 0.3),
                   "max_tokens": rc.get("max_tokens", 4096)}
         if rc.get("top_p") is not None:
             params["top_p"] = rc["top_p"]
-        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-        key = AnswerCache.key(params, messages, rc.get("extra_body"))
-        cached = self.cache.get(key)
-        if cached is not None:
-            return extract_json(cached) if json_mode else cached
-        if self.offline:
-            raise CacheMiss(f"offline mode: no cached answer for the {role} call ({params['model']})")
-        content = self._call(role, rc, params, messages, json_mode)
-        self.cache.put(key, params, content)
-        return extract_json(content) if json_mode else content
+        return params
 
-    def _call(self, role: str, rc: dict, params: dict, messages: list[dict], json_mode: bool) -> str:
+    def chat(self, role: str, system: str, user: str, *, json_mode: bool = True):
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        options = [self.model_for(role)] + [b for b in [self.backup_for(role)] if b]
+        keyed = []
+        for rc in options:
+            params = self._params(rc)
+            keyed.append((rc, params, AnswerCache.key(params, messages, rc.get("extra_body"))))
+        for _, _, key in keyed:   # a cached answer from the main model, else from the backup
+            cached = self.cache.get(key)
+            if cached is not None:
+                return extract_json(cached) if json_mode else cached
+        if self.offline:
+            raise CacheMiss(f"offline mode: no cached answer for the {role} call ({keyed[0][1]['model']})")
+        for i, (rc, params, key) in enumerate(keyed):
+            has_backup = i < len(keyed) - 1
+            if has_backup and params["model"] in self.down:   # already failed this run: one try per run, not per call
+                continue
+            try:
+                content = self._call(role, rc, params, messages, json_mode, fail_fast=has_backup)
+            except CallFailed as e:
+                if not has_backup:
+                    raise
+                if isinstance(e, ModelUnavailable):
+                    self.down.add(params["model"])
+                log.warning("%s: %s failed (%s); switching to backup %s", role, params["model"], e,
+                            keyed[i + 1][1]["model"])
+                continue
+            self.cache.put(key, params, content)
+            if i:
+                with self._log_lock:
+                    used = self.backups_used.setdefault(role, {"model": params["model"],
+                                                               "instead_of": keyed[0][1]["model"], "calls": 0})
+                    used["calls"] += 1
+            return extract_json(content) if json_mode else content
+
+    def _call(self, role: str, rc: dict, params: dict, messages: list[dict], json_mode: bool,
+              fail_fast: bool = False) -> str:
         """One request with retries. 429s wait without using up an attempt; errors back off; an empty or truncated
-        answer is retried with double the token budget (reasoning models can spend it all thinking)."""
+        answer is retried with double the token budget (reasoning models can spend it all thinking). With
+        fail_fast (a backup is configured), a server or connection error raises ModelUnavailable at once."""
         call_params = dict(params)
         if rc.get("extra_body"):
             call_params["extra_body"] = rc["extra_body"]
@@ -121,9 +180,11 @@ class LLM:
                 last_err = e
                 self._log(role, params["model"], time.time() - t0, None, ok=False, err=f"{type(e).__name__}: {e}"[:300],
                           queued=t0 - tq, rc=rc)
+                if fail_fast and isinstance(e, (APIStatusError, APIConnectionError)):
+                    raise ModelUnavailable(f"{type(e).__name__}: {e}"[:200]) from e
                 time.sleep(min(60, 4 * 2 ** attempt))
                 attempt += 1
-        raise RuntimeError(f"{role} call failed ({attempt} attempts, {waited_429:.0f}s waiting on 429s): {last_err}")
+        raise CallFailed(f"{role} call failed ({attempt} attempts, {waited_429:.0f}s waiting on 429s): {last_err}")
 
     def _log(self, role, model, secs, usage, ok, err=None, queued=0.0, rc=None):
         rec = {"t": time.strftime("%Y-%m-%d %H:%M:%S"), "role": role, "model": model, "secs": round(secs, 1), "ok": ok,

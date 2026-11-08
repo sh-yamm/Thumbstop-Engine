@@ -15,7 +15,7 @@ from typing import Callable
 
 from . import output
 from .config import load_config
-from .llm import LLM
+from .llm import LLM, CacheMiss
 from .screenplay.parse import load_show
 from .stages.s1_reference import build_reference
 from .stages.s2_promo_finder import find_promos
@@ -23,7 +23,7 @@ from .stages.s4_montage import find_montages
 from .stages.s5_judge import judge_batch
 from .stages.s6_rank import listwise_rank
 from .stages.s7_captions import write_captions
-from .stages.s8_fact_check import fact_check_captions
+from .stages.s8_fact_check import fact_check_captions, hide_unchecked
 from .stages.selection import add_percentiles, exclude_unsafe, group_key, select_best
 
 Progress = Callable[[str, str], None]
@@ -117,17 +117,31 @@ def run(show_dir: str | Path, out_dir: str | Path, title: str | None = None, epi
 
     # selection (code): the best promo per episode and the best montages, near-duplicates removed
     kept = select_best(valid, keep_ep, keep_mont)
-    on_progress("selection", f"{len(kept)} kept (best {keep_ep} per episode, {keep_mont} montages)")
+    on_progress("selection", f"{len(kept)} kept (best {keep_ep} per episode" + (f", {keep_mont} montages)" if montage else ")"))
 
     # 6. ranker: posting order for every kept promo, shuffled runs averaged
     ranked = listwise_rank(llm, show, title, kept, runs=int(pipe.get("rank_runs", 3)))
     lap("rank", f"{len(ranked)} promos ranked")
 
-    # 7. captions for the top promos (code checks, one repair), then 8. the fact check (one fix, else hidden)
-    targets = ranked[:cap_k]
-    write_captions(llm, show, reference, targets, batch=int(pipe.get("caption_batch", 20)))
-    lap("captions", f"captions written for the top {len(targets)}")
-    fact_check_captions(llm, show, title, targets, reference)
+    # 7. captions for the top promos (code checks, one repair), then 8. the fact check (one fix, else hidden).
+    # A failure here never loses the ranked promos: they are saved without captions (summary.json says why).
+    targets, errors = ranked[:cap_k], {}
+    try:
+        write_captions(llm, show, reference, targets, batch=int(pipe.get("caption_batch", 20)))
+        used = getattr(llm, "backups_used", {}).get("captions")
+        lap("captions", f"captions written for the top {len(targets)}"
+            + (f" by the backup model {used['model']} ({used['instead_of']} failed)" if used else ""))
+    except CacheMiss:
+        raise
+    except Exception as e:  # noqa: BLE001
+        errors["captions"] = f"{type(e).__name__}: {e}"[:300]
+        for c in targets:
+            hide_unchecked(c, "not fact-checked (the caption stage failed)")
+        lap("captions", f"FAILED, promos are saved without captions: {errors['captions']}")
+    if "captions" not in errors:
+        failed = fact_check_captions(llm, show, title, targets, reference)
+        if failed:
+            errors["fact_check"] = f"{len(failed)} of {len(targets)} checks failed (captions hidden): {failed[0]}"
     lap("fact_check", f"{sum(1 for c in targets if output.caption_of(c))} of {len(targets)} promos have a checked caption")
 
     # the alternatives (judged but not kept) follow the ranked promos, by judge score
@@ -146,6 +160,10 @@ def run(show_dir: str | Path, out_dir: str | Path, title: str | None = None, epi
                "captioned": sum(1 for c in ranked if c.get("captioned")),
                "minutes": round((time.time() - t0) / 60, 1), "stage_minutes": stage_minutes,
                "mode": run_mode(llm), "models": {r: llm.model_for(r)["model"] for r in cfg["roles"]}}
+    if getattr(llm, "backups_used", None):
+        summary["backups_used"] = llm.backups_used
+    if errors:
+        summary["errors"] = errors
     output.dump_json(out / "summary.json", summary)
     on_progress("done", f"{len(ranked)} promos ranked, {summary['captioned']} captioned, in {summary['minutes']} min")
     return summary
