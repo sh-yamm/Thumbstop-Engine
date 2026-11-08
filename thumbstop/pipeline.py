@@ -84,7 +84,10 @@ def run(show_dir: str | Path, out_dir: str | Path, title: str | None = None, epi
     reference = (json.loads(reference_path.read_text(encoding="utf-8")) if reference_path.exists()
                  else build_reference(llm, show, title))
     output.dump_json(reference_path, reference)
-    lap("reference", str(reference["_check"]))
+    chk = reference.get("_check") or {}
+    lap("reference", f"{chk.get('episodes_summarised', '?')} of {chk.get('episodes_total', '?')} episodes summarised; "
+        f"{chk.get('labels_total', 0) - len(chk.get('labels_unmapped') or [])} of {chk.get('labels_total', 0)} "
+        "speaker labels mapped to characters")
 
     # 2. promo finder, one call per episode, and 3. the rule check with one repair round (inside find_promos)
     with ThreadPoolExecutor(workers) as ex:

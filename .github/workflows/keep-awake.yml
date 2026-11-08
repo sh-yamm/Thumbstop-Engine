@@ -1,0 +1,40 @@
+# Backup for the Space's own keep-awake process: every 15 minutes, open the app in a headless browser.
+# A browser visit runs the app (a plain HTTP request does not), counts as activity, and wakes a sleeping Space.
+name: Keep the Space awake
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  visit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SPACE_URL: https://shyam12321-thumbstop-engine.hf.space/
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install a headless browser
+        run: |
+          pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Open the app
+        run: |
+          python - <<'EOF'
+          import os
+          from playwright.sync_api import sync_playwright
+          url = os.environ["SPACE_URL"]
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              page = b.new_page()
+              page.goto(url, timeout=240000)
+              try:
+                  page.wait_for_selector("text=Thumbstop Engine", timeout=240000)
+                  print("app is up:", url)
+              except Exception as e:
+                  print("opened, app not ready yet (it may be waking up):", e)
+              b.close()
+          EOF

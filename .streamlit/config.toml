@@ -1,0 +1,29 @@
+# Thumbstop Engine web app theme: the palette of the solution document (terracotta on warm paper).
+[theme]
+base = "light"
+primaryColor = "#b5502c"
+backgroundColor = "#fffaf4"
+secondaryBackgroundColor = "#f6ece0"
+textColor = "#2e1f17"
+linkColor = "#8f3c1f"
+borderColor = "#ead9c6"
+showWidgetBorder = true
+baseRadius = "10px"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap, Georgia, serif"
+headingFontWeights = [700, 650, 600]
+codeFont = "monospace"
+dataframeHeaderBackgroundColor = "#f6ece0"
+
+[server]
+# Hugging Face serves the app inside an iframe on port 8501; uploads need these off there.
+port = 8501
+enableXsrfProtection = false
+enableCORS = false
+maxUploadSize = 20
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"

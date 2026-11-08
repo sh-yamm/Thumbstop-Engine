@@ -41,10 +41,11 @@ Built for the Kuku AI Generalist Assignment (Problem 1, "Find the Promos"). The 
 10. [Configuration](#10-configuration)
 11. [Calls, cache, rate limits and run modes](#11-calls-cache-rate-limits-and-run-modes)
 12. [Using it from Python](#12-using-it-from-python)
-13. [Tests](#13-tests)
-14. [Cost, time and scale](#14-cost-time-and-scale)
-15. [Results on the assignment show](#15-results-on-the-assignment-show)
-16. [Where it falls short](#16-where-it-falls-short)
+13. [The web app: Demo and Live run](#13-the-web-app-demo-and-live-run)
+14. [Tests](#14-tests)
+15. [Cost, time and scale](#15-cost-time-and-scale)
+16. [Results on the assignment show](#16-results-on-the-assignment-show)
+17. [Where it falls short](#17-where-it-falls-short)
 
 ---
 
@@ -58,6 +59,8 @@ cp .env.example .env                       # then put your key in .env (free key
 
 python -m thumbstop --show "path/to/show folder" --out outputs/myshow
 ```
+
+Prefer a browser? `streamlit run app/streamlit_app.py` opens the web app ([§13](#13-the-web-app-demo-and-live-run)).
 
 Common variations:
 
@@ -85,7 +88,7 @@ The run prints one line per stage as it finishes. This is the assignment show, r
 
 ```
 [parse] 50 episodes; finding promos in 50
-[reference] {'labels_total': 64, 'labels_unmapped': [], 'episodes_summarised': 50, 'episodes_total': 50}
+[reference] 50 of 50 episodes summarised; 64 of 64 speaker labels mapped to characters
 [promo_finder] 145 proposals from 50 episodes
 [montage] 11 montage proposals
 [rule_check] 156 candidates, 138 pass the rules
@@ -481,6 +484,20 @@ Thumbstop-Engine/
 ├── requirements.txt             openai, PyYAML, pytest
 ├── .env.example                 copy to .env and add your API key
 │
+├── app/                         the web app (Streamlit): streamlit run app/streamlit_app.py
+│   ├── streamlit_app.py         page setup and navigation: Demo, Live run, How it works
+│   ├── views/                   demo.py · live.py · how.py, one per page
+│   ├── ui.py                    theme and components: figures, pipeline strip, promo card, clip view
+│   ├── data.py                  finds the data (local folders, or the private dataset on a Space)
+│   ├── runner.py                live runs in a background thread, one at a time, state saved per stage
+│   ├── preflight.py             the model check before a live run
+│   ├── keepalive.py             visits the Space every 15 minutes so it never sleeps
+│   ├── state.py                 what is shared by every visitor (data, screenplays, run manager)
+│   └── requirements.txt         the package's requirements plus streamlit and huggingface_hub
+├── .streamlit/config.toml       the app's theme
+├── deploy/                      Hugging Face Space: Dockerfile, Space README, push_data.py, push_space.py
+├── .github/workflows/           keep-awake.yml: opens the app every 15 minutes
+│
 ├── thumbstop/                   the package
 │   ├── __main__.py              python -m thumbstop  →  cli.main()
 │   ├── cli.py                   command-line flags → pipeline.run()
@@ -521,10 +538,11 @@ Thumbstop-Engine/
     ├── conftest.py              finds a screenplay folder for the data tests (THUMBSTOP_TEST_PACK)
     ├── test_screenplay_and_rules.py
     ├── test_llm_client.py
-    └── test_pipeline_fake.py
+    ├── test_pipeline_fake.py
+    └── test_app.py
 ```
 
-Created when you run it (not in the repository): `.env` (your key), `.cache/` (the answer cache) and `outputs/` (the runs and the call log).
+Created when you run it (not in the repository): `.env` (your key), `.cache/` (the answer cache), `outputs/` (the runs and the call log), and for the web app `runs/` (live runs) and `data/` (the downloaded data on a Space).
 
 ### How the modules depend on each other
 
@@ -638,7 +656,40 @@ print(summary["ranked"], summary["stage_minutes"])
 
 ---
 
-## 13. Tests
+## 13. The web app: Demo and Live run
+
+A Streamlit app in [`app/`](app/) puts the pipeline in a browser, with three pages:
+
+| Page | What it does |
+|---|---|
+| **Demo** | Opens on a finished full-show run: the headline figures, the pipeline, and every ranked promo as a card (caption, where it sits, hook, cliffhanger, the judge's scores, and the clip itself as a viewer meets it, with the 3-second mark). **Replay the run** re-runs all ten stages from the saved model answers in a few seconds, lighting each stage up as it finishes, and checks that the ranking comes out identical to the delivered files. No API key needed. |
+| **Live run** | The real pipeline, every answer from a model call. **Check the models** first sends one tiny request to every model in use (about 30 seconds) and reports which are answering; if Gemma is down it says the captions will come from Nemotron. Then pick episodes of the show (or upload your own screenplay `.txt` files) and start. The run continues in the background if the tab is closed, one run at a time, and the page follows it stage by stage, then shows the promos. |
+| **How it works** | The stages, the three principles and the models, in brief. |
+
+```bash
+pip install -r app/requirements.txt          # adds streamlit and huggingface_hub
+streamlit run app/streamlit_app.py           # Demo needs a finished run; Live run needs NVIDIA_API_KEY
+```
+
+**Where its data comes from.** Run locally, the app reads `pack/<show>/`, `outputs/final_run/` and `.cache/` from the working folder. On a Hugging Face Space, the screenplays, the delivered run and the saved answers live in a **private** Hugging Face dataset (the input pack must not be published), downloaded at start-up with a token kept as a Space secret ([`app/data.py`](app/data.py)).
+
+**Deploying to a Hugging Face Space** ([`deploy/`](deploy/)):
+
+```bash
+python deploy/push_data.py                   # creates the private dataset (checks it is private first) and uploads the data
+python deploy/push_space.py --secrets        # creates the public Space (Docker + Streamlit), sets HF_TOKEN and NVIDIA_API_KEY
+```
+
+The Space holds only the code; [`deploy/Dockerfile`](deploy/Dockerfile) runs Streamlit on port 8501.
+
+**Keeping it awake.** Hugging Face pauses a free Space after 48 hours without visits. Two things prevent that:
+
+- a background process started with the container ([`app/keepalive.py`](app/keepalive.py)) visits the Space's own page every 15 minutes (`THUMBSTOP_KEEPALIVE_MINUTES`); the footer shows its last visit;
+- a scheduled GitHub Action ([`.github/workflows/keep-awake.yml`](.github/workflows/keep-awake.yml)) opens the app in a headless browser every 15 minutes. That is a real visit, and it also wakes the Space if it has gone to sleep (which would have stopped the first process). GitHub pauses scheduled workflows in a repository with no activity for 60 days.
+
+---
+
+## 14. Tests
 
 ```bash
 python -m pytest -q
@@ -648,13 +699,14 @@ python -m pytest -q
 |---|---|
 | `test_screenplay_and_rules.py` | time conversion, speaker-label parsing, overlap; with a screenplay folder: every episode parses, snapped segments never cut a line, the rules catch bad promos, unknown IDs fail, and the caption rules (length, evidence, spoilers) hold |
 | `test_llm_client.py` | cache keys change with the model, settings, prompt and extra body; offline mode needs no key and reads the cache; fresh mode neither reads nor writes; fallback roles; JSON extraction from messy replies; the SDK's hidden retries are off; a main model that answers 504 gets one try and the backup answers, cached under the backup and replayable offline; roles without a backup still retry; both down raises; backup settings and the environment override |
+| `test_app.py` | the web app without a browser: where its data is found, a failed download reported instead of a crash, a live run in the background that saves its state and survives a restart, interrupted and failed runs, the time estimate, the keep-awake visits, the model check, and a headless render of every page |
 | `test_pipeline_fake.py` | the **whole pipeline end to end with a fake model** that picks real line IDs from its prompt: a too-long promo is caught and repaired, the stages run in order, captions come after ranking, progress events are sent, and every output file is written. Also: a judge answer without IDs is matched by position; a caption outage still writes every output with no caption shown; a failed fact check hides only that promo's lines |
 
 No test calls a model or needs a key. Tests that need screenplays look for `THUMBSTOP_TEST_PACK` (or a folder under `./pack/`) and are skipped without one.
 
 ---
 
-## 14. Cost, time and scale
+## 15. Cost, time and scale
 
 - **Calls:** about 150 for a 50-episode show (see the table in [§3](#3-how-it-works)).
 - **On NVIDIA's free tier,** the final configuration took about 3 hours 15 minutes: 9 minutes for the show reference, 26 for promo finding, 3 for the montage, about 100 for judging, 7 for ranking, 18 for captions and 30 for the fact check. Most of that is waiting for the free endpoint rather than work: Step 5 and Gemma 4 are slow there, and single calls often wait minutes.
@@ -668,7 +720,7 @@ No test calls a model or needs a key. Tests that need screenplays look for `THUM
 
 ---
 
-## 15. Results on the assignment show
+## 16. Results on the assignment show
 
 On the 50-episode assignment show (about 103 minutes of screen time, 3,727 timed lines):
 
@@ -684,7 +736,7 @@ On the 50-episode assignment show (about 103 minutes of screen time, 3,727 timed
 
 ---
 
-## 16. Where it falls short
+## 17. Where it falls short
 
 - **Text only.** Moments that work through visuals alone are under-rated.
 - **Endings that settle.** Models like to end on a reaction ("her face hardens into resolve"), which closes the moment. The prompts and the judge treat this as a weak ending, but it still appears.
