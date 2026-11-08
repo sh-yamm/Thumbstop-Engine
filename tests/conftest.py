@@ -1,5 +1,6 @@
 """Shared fixtures. Tests that need screenplays use the `show` fixture, which loads a folder of episode .txt files:
-$THUMBSTOP_TEST_PACK if set, else the first folder under ./pack/ that holds .txt files. Without one they are skipped."""
+$THUMBSTOP_TEST_PACK if set, else the first folder under ./pack/ or ./data/pack/ that holds .txt files. Without one
+they are skipped."""
 import os
 from pathlib import Path
 
@@ -12,11 +13,11 @@ def find_pack() -> Path | None:
     env = os.environ.get("THUMBSTOP_TEST_PACK")
     if env:
         return Path(env)
-    base = ROOT / "pack"
-    if base.is_dir():
-        for d in sorted(base.iterdir()):
-            if d.is_dir() and any(d.glob("*.txt")):
-                return d
+    for base in (ROOT / "pack", ROOT / "data" / "pack"):
+        if base.is_dir():
+            for d in sorted(base.iterdir()):
+                if d.is_dir() and any(d.glob("*.txt")):
+                    return d
     return None
 
 

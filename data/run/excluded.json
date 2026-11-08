@@ -1,0 +1,22 @@
+[
+  {
+    "cand_id": "C145",
+    "title": "price_of_discretion",
+    "segments": [
+      {
+        "episode": 50,
+        "start": "00:30.50",
+        "end": "01:20.00",
+        "start_sec": 30.5,
+        "end_sec": 80.0,
+        "length_sec": 49.5
+      }
+    ],
+    "ad_policy": {
+      "level": "high",
+      "category": "sexual",
+      "reason": "The clip shows a shirtless priest and Catherine in a passionate, intimate embrace on a bed with almost-kissing and hands in hair, clearly implying sexual activity."
+    },
+    "excluded_by": "judge"
+  }
+]

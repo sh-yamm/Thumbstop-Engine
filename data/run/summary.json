@@ -1,0 +1,30 @@
+{
+  "title": "I Married a Broken Soldier. He was a Duke",
+  "episodes": 50,
+  "candidates": 156,
+  "valid": 138,
+  "excluded": 1,
+  "ranked": 48,
+  "also_found": 89,
+  "captioned": 20,
+  "minutes": 0.0,
+  "stage_minutes": {
+    "reference": 0.0,
+    "promo_finder": 0.0,
+    "montage": 0.0,
+    "judge": 0.0,
+    "rank": 0.0,
+    "captions": 0.0,
+    "fact_check": 0.0
+  },
+  "mode": "offline: every answer read from the cache, no model calls",
+  "models": {
+    "reference": "nvidia/nemotron-3-ultra-550b-a55b",
+    "proposer": "nvidia/nemotron-3-ultra-550b-a55b",
+    "montage": "nvidia/nemotron-3-ultra-550b-a55b",
+    "judge": "stepfun-ai/step-5-preview",
+    "ranker": "nvidia/nemotron-3-ultra-550b-a55b",
+    "captions": "google/gemma-4-31b-it",
+    "factcheck": "mistralai/mistral-large-4-1t-a52b"
+  }
+}

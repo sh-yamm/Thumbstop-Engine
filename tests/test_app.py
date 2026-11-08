@@ -131,13 +131,12 @@ def test_model_check_reports_each_model_and_its_backup():
     assert res["n"]["ok"] and res["s"]["ok"] and not res["g"]["ok"] and "no answer" in res["g"]["detail"]
 
 
-@pytest.mark.skipif(not (data.ROOT / "outputs" / "final_run" / "promos.json").exists(),
-                    reason="needs the delivered run locally")
+@pytest.mark.skipif(not data.locate(download=False).ready, reason="needs the delivered run (data/run/)")
 @pytest.mark.parametrize("page", ["demo", "live", "how"])
 def test_every_page_renders(page, monkeypatch):
+    pytest.importorskip("streamlit")
     from streamlit.testing.v1 import AppTest
     monkeypatch.delenv("THUMBSTOP_DATA_REPO", raising=False)
-    monkeypatch.setenv("THUMBSTOP_DATA_DIR", str(data.ROOT / "no-such-dir"))
     at = AppTest.from_string(f"""
 import sys; sys.path.insert(0, {str(data.ROOT)!r})
 from app import ui

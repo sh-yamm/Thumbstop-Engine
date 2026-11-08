@@ -1,0 +1,1270 @@
+{
+  "premise": "A jilted bride marries a scarred stranger to escape ruin, only to discover he is the missing Duke of Ashburton, and together they reclaim his title from the usurpers who poisoned his mother and framed her for witchcraft.",
+  "title_promise": "The title promises a romance where a woman marries a broken soldier who turns out to be a duke, delivering a Cinderella-meets-identity-reveal fantasy.",
+  "tropes": [
+    "hidden identity",
+    "jilted bride",
+    "marriage of convenience",
+    "secret duke",
+    "revenge",
+    "poisoning",
+    "witchcraft accusation",
+    "rescue romance",
+    "second chance romance",
+    "class difference",
+    "family betrayal"
+  ],
+  "characters": [
+    {
+      "name": "Juliana Ashcroft",
+      "name_variants": [
+        "Juliana",
+        "Lady Juliana",
+        "Lady Juliana Ashcroft"
+      ],
+      "role_for_strangers": "the jilted bride who becomes a healer and duchess",
+      "relationships": [
+        "daughter of Lord Ashcroft",
+        "stepdaughter of Lady Ashcroft",
+        "sister of Clarissa Ashcroft",
+        "former fiancée of Gerald Harrington",
+        "wife of Alexander Ashburton",
+        "Duchess of Ashburton"
+      ],
+      "description": "A resilient noblewoman cast out by her family, who uses her herbal knowledge to heal others and wins the love of a hidden duke.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Alexander Ashburton",
+      "name_variants": [
+        "Alexander",
+        "Mysterious Bearded Man",
+        "Scarred Bearded Man",
+        "The Bearded Stranger",
+        "The Duke"
+      ],
+      "role_for_strangers": "the scarred soldier who is secretly the Duke of Ashburton",
+      "relationships": [
+        "son of the Dowager Duchess",
+        "cousin of Rupert Ashburn",
+        "husband of Juliana Ashcroft",
+        "Duke of Ashburton"
+      ],
+      "description": "A war veteran presumed dead, living in exile until he reclaims his title and saves his wife from execution.",
+      "is_secretly": "Duke of Ashburton",
+      "secret_revealed_in_ep": 35
+    },
+    {
+      "name": "Clarissa Ashcroft",
+      "name_variants": [
+        "Clarissa",
+        "Lady Clarissa",
+        "Lady in Gold Gown",
+        "Aristocratic Woman"
+      ],
+      "role_for_strangers": "Juliana's sister who steals her fiancé",
+      "relationships": [
+        "daughter of Lord and Lady Ashcroft",
+        "sister of Juliana Ashcroft",
+        "wife of Gerald Harrington"
+      ],
+      "description": "Ambitious and cruel, she marries Juliana's former fiancé and gloats over her sister's downfall.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Gerald Harrington",
+      "name_variants": [
+        "Gerald",
+        "The Former Groom"
+      ],
+      "role_for_strangers": "Juliana's faithless ex-fiancé",
+      "relationships": [
+        "son of Lord and Lady Harrington",
+        "former fiancé of Juliana Ashcroft",
+        "husband of Clarissa Ashcroft"
+      ],
+      "description": "A selfish aristocrat who abandons Juliana for a wealthier match and later tries to destroy her husband.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Rupert Ashburn",
+      "name_variants": [
+        "Rupert",
+        "Blond Nobleman",
+        "Lord"
+      ],
+      "role_for_strangers": "the usurping cousin who stole the dukedom",
+      "relationships": [
+        "cousin of Alexander Ashburton",
+        "ally of Lord Sterling",
+        "lover of Catherine",
+        "former heir presumptive"
+      ],
+      "description": "A charming but ruthless nobleman who conspired to have Alexander declared dead and seized the estate.",
+      "is_secretly": "conspirator in Alexander's ambush and the Dowager Duchess's poisoning",
+      "secret_revealed_in_ep": 43
+    },
+    {
+      "name": "Lord Henry Sterling",
+      "name_variants": [
+        "Lord Sterling",
+        "Elder Nobleman"
+      ],
+      "role_for_strangers": "the elder conspirator who orchestrated the duke's downfall",
+      "relationships": [
+        "ally of Rupert Ashburn",
+        "architect of the false death report",
+        "enemy of the Ashburton family"
+      ],
+      "description": "A cold, calculating nobleman who manipulates the legal system to legitimize Rupert's claim.",
+      "is_secretly": "leaked Alexander's position to the enemy",
+      "secret_revealed_in_ep": 43
+    },
+    {
+      "name": "Catherine",
+      "name_variants": [
+        "Catherine",
+        "Lady Catherine",
+        "Noblewoman"
+      ],
+      "role_for_strangers": "the vindictive noblewoman who poisons the Dowager Duchess and frames Juliana",
+      "relationships": [
+        "lover of Rupert Ashburn",
+        "conspirator with Father Thomas",
+        "enemy of Juliana and Alexander"
+      ],
+      "description": "A woman scorned by Alexander's return, she stops at nothing to become duchess, including murder and witchcraft accusations.",
+      "is_secretly": "poisoned the Dowager Duchess with arsenic",
+      "secret_revealed_in_ep": 28
+    },
+    {
+      "name": "Dowager Duchess",
+      "name_variants": [
+        "Dowager Duchess",
+        "Alexander's Mother",
+        "Lady Ashbourne"
+      ],
+      "role_for_strangers": "Alexander's imprisoned mother, poisoned by her enemies",
+      "relationships": [
+        "mother of Alexander Ashburton",
+        "prisoner of Rupert and Catherine",
+        "saved by Juliana's antidote"
+      ],
+      "description": "The rightful matriarch of Ashburton, slowly poisoned until Juliana's intervention and Alexander's return free her.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Lady Ashcroft",
+      "name_variants": [
+        "Lady Ashcroft",
+        "Matriarch",
+        "Noble Matriarch"
+      ],
+      "role_for_strangers": "Juliana's cruel stepmother",
+      "relationships": [
+        "wife of Lord Ashcroft",
+        "mother of Clarissa Ashcroft",
+        "stepmother of Juliana Ashcroft"
+      ],
+      "description": "A status-obsessed woman who disowns Juliana to advance Clarissa's marriage.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Lord Ashcroft",
+      "name_variants": [
+        "Lord Ashcroft"
+      ],
+      "role_for_strangers": "Juliana's passive father",
+      "relationships": [
+        "husband of Lady Ashcroft",
+        "father of Juliana and Clarissa"
+      ],
+      "description": "A weak man who allows his wife to cast out their daughter.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Prudence",
+      "name_variants": [
+        "Prudence"
+      ],
+      "role_for_strangers": "a loyal villager who becomes Juliana's ally",
+      "relationships": [
+        "villager",
+        "friend of Juliana",
+        "later maid at Ashburton"
+      ],
+      "description": "A brave young woman who seeks Juliana's help for her brother and later helps her infiltrate the manor.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Seamus",
+      "name_variants": [
+        "Seamus"
+      ],
+      "role_for_strangers": "an elderly villager who respects Juliana",
+      "relationships": [
+        "villager",
+        "sympathetic to Juliana"
+      ],
+      "description": "A weathered villager who laments Juliana's reduced circumstances but admires her dedication.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Father Thomas",
+      "name_variants": [
+        "Father Thomas",
+        "The Priest",
+        "Priest",
+        "High Priest"
+      ],
+      "role_for_strangers": "a corrupt priest who conspires with Catherine",
+      "relationships": [
+        "priest",
+        "lover and co-conspirator of Catherine"
+      ],
+      "description": "A priest who uses his position to manipulate the High Council and delay Juliana's vindication.",
+      "is_secretly": "conspiring with Catherine to undermine the marriage hearing",
+      "secret_revealed_in_ep": 49
+    },
+    {
+      "name": "Agnes",
+      "name_variants": [
+        "Agnes"
+      ],
+      "role_for_strangers": "Catherine's maid and accomplice",
+      "relationships": [
+        "maid to Catherine",
+        "accomplice in her schemes"
+      ],
+      "description": "A servant who helps Catherine smuggle Father Thomas into the house and witnesses their affair.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Vaughn",
+      "name_variants": [
+        "Vaughn"
+      ],
+      "role_for_strangers": "the Dowager Duchess's loyal servant",
+      "relationships": [
+        "servant to the Dowager Duchess"
+      ],
+      "description": "A gruff but loyal retainer ready to eject Catherine on command.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Lady Harrington",
+      "name_variants": [
+        "Lady Harrington"
+      ],
+      "role_for_strangers": "Gerald's mother, eager for status",
+      "relationships": [
+        "wife of Lord Harrington",
+        "mother of Gerald Harrington"
+      ],
+      "description": "A smug aristocrat who delights in Juliana's humiliation.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    },
+    {
+      "name": "Lord Harrington",
+      "name_variants": [
+        "Lord Harrington"
+      ],
+      "role_for_strangers": "Gerald's father, ambitious for connections",
+      "relationships": [
+        "husband of Lady Harrington",
+        "father of Gerald Harrington"
+      ],
+      "description": "A nobleman who sees the Ashburton alliance as a path to greater power.",
+      "is_secretly": "",
+      "secret_revealed_in_ep": 0
+    }
+  ],
+  "label_map": [
+    {
+      "label": "AGNES",
+      "episodes": [
+        48
+      ],
+      "character": "Agnes"
+    },
+    {
+      "label": "ALEXANDER",
+      "episodes": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        25,
+        35,
+        36,
+        39,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "character": "Alexander Ashburton"
+    },
+    {
+      "label": "ALEXANDER'S MOTHER",
+      "episodes": [
+        35,
+        36,
+        42
+      ],
+      "character": "Dowager Duchess"
+    },
+    {
+      "label": "ARISTOCRATIC WOMAN",
+      "episodes": [
+        7
+      ],
+      "character": "Clarissa Ashcroft"
+    },
+    {
+      "label": "BALD THUG",
+      "episodes": [
+        15,
+        16
+      ],
+      "character": "Bald Thug"
+    },
+    {
+      "label": "BLOND NOBLEMAN",
+      "episodes": [
+        2,
+        9,
+        27,
+        28,
+        37,
+        40,
+        41,
+        42,
+        43,
+        44
+      ],
+      "character": "Rupert Ashburn"
+    },
+    {
+      "label": "BUTLER",
+      "episodes": [
+        37
+      ],
+      "character": "Butler"
+    },
+    {
+      "label": "CART DRIVER",
+      "episodes": [
+        39
+      ],
+      "character": "Cart Driver"
+    },
+    {
+      "label": "CATHERINE",
+      "episodes": [
+        20,
+        28,
+        29,
+        30,
+        31,
+        32,
+        37,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "character": "Catherine"
+    },
+    {
+      "label": "CLARISSA",
+      "episodes": [
+        4,
+        5,
+        12,
+        13
+      ],
+      "character": "Clarissa Ashcroft"
+    },
+    {
+      "label": "CONSPIRATOR",
+      "episodes": [
+        47
+      ],
+      "character": "Conspirator"
+    },
+    {
+      "label": "CONSTABLE",
+      "episodes": [
+        11,
+        12
+      ],
+      "character": "Constable"
+    },
+    {
+      "label": "CROWN OFFICIAL",
+      "episodes": [
+        43
+      ],
+      "character": "Crown Official"
+    },
+    {
+      "label": "DOWAGER DUCHESS",
+      "episodes": [
+        26,
+        27,
+        28,
+        43
+      ],
+      "character": "Dowager Duchess"
+    },
+    {
+      "label": "ELDER NOBLEMAN",
+      "episodes": [
+        30,
+        40
+      ],
+      "character": "Lord Henry Sterling"
+    },
+    {
+      "label": "ELDER VILLAGER",
+      "episodes": [
+        19
+      ],
+      "character": "Elder Villager"
+    },
+    {
+      "label": "FATHER THOMAS",
+      "episodes": [
+        49,
+        50
+      ],
+      "character": "Father Thomas"
+    },
+    {
+      "label": "FOOTMAN",
+      "episodes": [
+        40
+      ],
+      "character": "Footman"
+    },
+    {
+      "label": "GERALD",
+      "episodes": [
+        4,
+        5,
+        7,
+        11,
+        12,
+        13
+      ],
+      "character": "Gerald Harrington"
+    },
+    {
+      "label": "GUARD",
+      "episodes": [
+        29,
+        38
+      ],
+      "character": "Guard"
+    },
+    {
+      "label": "HIGH PRIEST",
+      "episodes": [
+        45,
+        46
+      ],
+      "character": "Father Thomas"
+    },
+    {
+      "label": "HOUSEKEEPER",
+      "episodes": [
+        22
+      ],
+      "character": "Housekeeper"
+    },
+    {
+      "label": "INFORMANT",
+      "episodes": [
+        19
+      ],
+      "character": "Informant"
+    },
+    {
+      "label": "JUDGE",
+      "episodes": [
+        34
+      ],
+      "character": "Judge"
+    },
+    {
+      "label": "JULIANA",
+      "episodes": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        25,
+        26,
+        27,
+        28,
+        29,
+        31,
+        32,
+        37,
+        38,
+        41,
+        42,
+        45,
+        46,
+        47
+      ],
+      "character": "Juliana Ashcroft"
+    },
+    {
+      "label": "LADY ASHBOURNE",
+      "episodes": [
+        47
+      ],
+      "character": "Dowager Duchess"
+    },
+    {
+      "label": "LADY ASHCROFT",
+      "episodes": [
+        4,
+        5
+      ],
+      "character": "Lady Ashcroft"
+    },
+    {
+      "label": "LADY CATHERINE",
+      "episodes": [
+        27
+      ],
+      "character": "Catherine"
+    },
+    {
+      "label": "LADY CLARISSA",
+      "episodes": [
+        37
+      ],
+      "character": "Clarissa Ashcroft"
+    },
+    {
+      "label": "LADY HARRINGTON",
+      "episodes": [
+        40
+      ],
+      "character": "Lady Harrington"
+    },
+    {
+      "label": "LADY IN GOLD GOWN",
+      "episodes": [
+        1,
+        2,
+        3
+      ],
+      "character": "Clarissa Ashcroft"
+    },
+    {
+      "label": "LADY JULIANA",
+      "episodes": [
+        1,
+        2,
+        3,
+        21,
+        22,
+        23,
+        24,
+        34
+      ],
+      "character": "Juliana Ashcroft"
+    },
+    {
+      "label": "LORD",
+      "episodes": [
+        33,
+        34
+      ],
+      "character": "Rupert Ashburn"
+    },
+    {
+      "label": "LORD ASHCROFT",
+      "episodes": [
+        5
+      ],
+      "character": "Lord Ashcroft"
+    },
+    {
+      "label": "LORD HARRINGTON",
+      "episodes": [
+        40
+      ],
+      "character": "Lord Harrington"
+    },
+    {
+      "label": "LORD STERLING",
+      "episodes": [
+        44
+      ],
+      "character": "Lord Henry Sterling"
+    },
+    {
+      "label": "LOYALIST",
+      "episodes": [
+        39
+      ],
+      "character": "Loyalist"
+    },
+    {
+      "label": "LOYALIST FIGHTER",
+      "episodes": [
+        39
+      ],
+      "character": "Loyalist Fighter"
+    },
+    {
+      "label": "LOYALIST SCOUT",
+      "episodes": [
+        39
+      ],
+      "character": "Loyalist Scout"
+    },
+    {
+      "label": "MAID",
+      "episodes": [
+        33
+      ],
+      "character": "Maid"
+    },
+    {
+      "label": "MATRIARCH",
+      "episodes": [
+        1
+      ],
+      "character": "Lady Ashcroft"
+    },
+    {
+      "label": "MYSTERIOUS BEARDED MAN",
+      "episodes": [
+        4,
+        5,
+        6
+      ],
+      "character": "Alexander Ashburton"
+    },
+    {
+      "label": "NOBLE MATRIARCH",
+      "episodes": [
+        3
+      ],
+      "character": "Lady Ashcroft"
+    },
+    {
+      "label": "NOBLEMAN",
+      "episodes": [
+        37,
+        41
+      ],
+      "character": "Nobleman"
+    },
+    {
+      "label": "NOBLEWOMAN",
+      "episodes": [
+        24,
+        41
+      ],
+      "character": "Catherine"
+    },
+    {
+      "label": "OFF-SCREEN VOICE",
+      "episodes": [
+        2
+      ],
+      "character": "Lady Ashcroft"
+    },
+    {
+      "label": "OLD WOMAN",
+      "episodes": [
+        34
+      ],
+      "character": "Old Woman"
+    },
+    {
+      "label": "PEASANT MOTHER",
+      "episodes": [
+        9
+      ],
+      "character": "Peasant Mother"
+    },
+    {
+      "label": "POLICE CONSTABLE",
+      "episodes": [
+        43,
+        44
+      ],
+      "character": "Police Constable"
+    },
+    {
+      "label": "PRIEST",
+      "episodes": [
+        41
+      ],
+      "character": "Father Thomas"
+    },
+    {
+      "label": "PRUDENCE",
+      "episodes": [
+        21,
+        22,
+        23,
+        24,
+        34
+      ],
+      "character": "Prudence"
+    },
+    {
+      "label": "ROYAL GUARD",
+      "episodes": [
+        3,
+        40,
+        42,
+        43
+      ],
+      "character": "Royal Guard"
+    },
+    {
+      "label": "ROYAL SENTRY",
+      "episodes": [
+        39
+      ],
+      "character": "Royal Sentry"
+    },
+    {
+      "label": "RUPERT",
+      "episodes": [
+        20,
+        30,
+        45
+      ],
+      "character": "Rupert Ashburn"
+    },
+    {
+      "label": "SCARRED BEARDED MAN",
+      "episodes": [
+        7
+      ],
+      "character": "Alexander Ashburton"
+    },
+    {
+      "label": "SEAMUS",
+      "episodes": [
+        20
+      ],
+      "character": "Seamus"
+    },
+    {
+      "label": "TALL THUG",
+      "episodes": [
+        15
+      ],
+      "character": "Tall Thug"
+    },
+    {
+      "label": "THE BEARDED STRANGER",
+      "episodes": [
+        3
+      ],
+      "character": "Alexander Ashburton"
+    },
+    {
+      "label": "THE FORMER GROOM",
+      "episodes": [
+        1,
+        2,
+        3,
+        9
+      ],
+      "character": "Gerald Harrington"
+    },
+    {
+      "label": "THE PRIEST",
+      "episodes": [
+        4
+      ],
+      "character": "Father Thomas"
+    },
+    {
+      "label": "THIRD THUG",
+      "episodes": [
+        16
+      ],
+      "character": "Third Thug"
+    },
+    {
+      "label": "THUG WITH CAP",
+      "episodes": [
+        15,
+        16
+      ],
+      "character": "Thug With Cap"
+    },
+    {
+      "label": "TOWNSMAN",
+      "episodes": [
+        34
+      ],
+      "character": "Townsman"
+    },
+    {
+      "label": "VAUGHN",
+      "episodes": [
+        47
+      ],
+      "character": "Vaughn"
+    }
+  ],
+  "episodes": [
+    {
+      "ep": 1,
+      "summary": "Juliana is humiliated at her wedding when her fiancé Gerald marries her sister Clarissa instead, and her family disowns her.",
+      "peak": "Gerald declares he chooses Clarissa over Juliana at the altar",
+      "ends_on": "Juliana stands alone as the congregation watches",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 2,
+      "summary": "Juliana confronts Gerald and her family, declaring her dignity intact despite their betrayal, and leaves the chapel with her head high.",
+      "peak": "Juliana tells Gerald his word is worthless",
+      "ends_on": "Juliana walks out of the chapel alone",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 3,
+      "summary": "A bearded stranger intervenes when guards drag Juliana away, kneels and proposes marriage, offering her his protection and name.",
+      "peak": "The Bearded Stranger proposes to Juliana on one knee",
+      "ends_on": "Juliana gazes at the stranger as the congregation gasps",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 4,
+      "summary": "Juliana accepts the stranger's proposal, they marry in the chapel, and her father disowns her, throwing her mother's ledger into the mud.",
+      "peak": "Juliana and the Mysterious Bearded Man are pronounced husband and wife",
+      "ends_on": "Juliana and her husband leave the chapel hand in hand",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 5,
+      "summary": "Juliana and her new husband retrieve the ledger, and he comforts her as they leave her former life behind.",
+      "peak": "Alexander kneels to retrieve the muddy ledger for Juliana",
+      "ends_on": "They walk away from the church into the rain",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 6,
+      "summary": "They arrive at his humble cottage in the woods, where Juliana finds peace in the quiet and begins to make it a home.",
+      "peak": "Juliana sweeps the floor while Alexander lights a fire",
+      "ends_on": "Juliana says she doesn't feel afraid sitting with him",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 7,
+      "summary": "Gerald and Clarissa visit to mock them, but the husband's silent menace drives them away.",
+      "peak": "Alexander appears with firewood and Gerald flees",
+      "ends_on": "Juliana and Alexander share a quiet moment after the confrontation",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 8,
+      "summary": "Juliana learns her husband's name is Alexander and discovers his knowledge of healing herbs, deepening their bond.",
+      "peak": "Alexander reveals he knows herbal medicine from soldiering",
+      "ends_on": "Juliana realizes she may have found something more valuable than wealth",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 9,
+      "summary": "Juliana saves a peasant child with herbs, while Gerald reports rumors that Alexander resembles the lost Duke.",
+      "peak": "The child's fever breaks under Juliana's care",
+      "ends_on": "Blond Nobleman whispers 'Impossible' upon hearing of Alexander's scar",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 10,
+      "summary": "Alexander is wounded, and Juliana tends him, their intimacy growing as she sees his scars.",
+      "peak": "Juliana stitches Alexander's wound and they share a charged moment",
+      "ends_on": "Alexander says her touch is the only medicine that eases his pain",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 11,
+      "summary": "Gerald accuses Alexander of theft, leading to a constable's search that seemingly finds a watch in Alexander's coat.",
+      "peak": "The constable finds Gerald's watch in Alexander's coat pocket",
+      "ends_on": "Gerald gloats as Juliana looks on in horror",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 12,
+      "summary": "Juliana defends Alexander, and Clarissa forces her to retrieve a ring from thorny briars to save him from hanging.",
+      "peak": "Clarissa demands Juliana crawl through frozen blackthorn for her ring",
+      "ends_on": "Juliana turns to the briars with fierce resolution",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 13,
+      "summary": "Juliana's hands are shredded retrieving the ring, and Alexander breaks free to save her.",
+      "peak": "Alexander roars and lunges past the constable as Juliana screams",
+      "ends_on": "Juliana finds the ring in the frozen dirt",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 14,
+      "summary": "Alexander tends Juliana's wounds, vowing vengeance on those who hurt her.",
+      "peak": "Alexander bandages Juliana's torn hands and clenches his fist in vengeance",
+      "ends_on": "Alexander swears no one will ever hurt her for protecting him again",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 15,
+      "summary": "Thugs destroy Juliana's herb garden, and Alexander arrives to defend her.",
+      "peak": "Alexander storms out of the cottage and places himself between Juliana and the thugs",
+      "ends_on": "Alexander stares down the three thugs with lethal intent",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 16,
+      "summary": "Alexander defeats the thugs, learning Gerald hired them, and comforts Juliana.",
+      "peak": "Alexander catches a club mid-swing and throws the thug leader against the wall",
+      "ends_on": "Alexander and Juliana gaze at each other as the thugs flee",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 17,
+      "summary": "Juliana and Alexander share tender moments, strengthening their love and trust.",
+      "peak": "Alexander vows no one will hurt Juliana again as long as he draws breath",
+      "ends_on": "Juliana rests her head on Alexander's chest, saying she trusts him more each day",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 18,
+      "summary": "Their cottage burns; Alexander rescues Juliana and the ledger, but they lose their home.",
+      "peak": "Alexander tackles Juliana away from a falling beam and leaps through a window with her",
+      "ends_on": "Alexander vows they took their home but he won't let them take anything else",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 19,
+      "summary": "Villagers shelter them; Alexander learns his mother is imprisoned and his cousin Rupert has usurped the dukedom.",
+      "peak": "Alexander's informant reveals Rupert and Catherine have imprisoned the Dowager Duchess",
+      "ends_on": "Alexander declares the dead Duke is coming home in two days",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 20,
+      "summary": "Rupert and Catherine plot to marry and execute Juliana; Juliana tends villagers despite her own losses.",
+      "peak": "Rupert and Catherine toast their upcoming wedding and Juliana's execution",
+      "ends_on": "Juliana refuses to yield to the cold draft, saying she is not finished",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 21,
+      "summary": "Juliana saves a villager's son, learning the Dowager Duchess is being poisoned.",
+      "peak": "Prudence reveals the Duchess is dying of a mysterious wasting illness",
+      "ends_on": "Juliana realizes the Duchess is being poisoned with arsenic",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 22,
+      "summary": "Juliana infiltrates Ashburton Manor as a maid to treat the Duchess.",
+      "peak": "Juliana enters the Duchess's chamber and recognizes arsenic symptoms",
+      "ends_on": "Juliana whispers 'Someone is poisoning her' as footsteps approach",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 23,
+      "summary": "Juliana identifies arsenic poisoning and treats the Duchess, but they are discovered.",
+      "peak": "Juliana administers charcoal antidote as the door opens",
+      "ends_on": "A noblewoman enters and catches Juliana with the remedy",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 24,
+      "summary": "Catherine whips Juliana and forces her to scrub hearths, but Juliana vows to return.",
+      "peak": "Catherine strikes Juliana with a riding crop",
+      "ends_on": "Juliana hides her ledger and vows 'I will return. You cannot stop the healer.'",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 25,
+      "summary": "Juliana tells Alexander about the poisoning; he is furious but supports her return.",
+      "peak": "Alexander clenches his fist in rage upon hearing of the poisoning",
+      "ends_on": "Alexander walks beside Juliana, demanding she tell him everything",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 26,
+      "summary": "Juliana continues treating the Duchess, who recognizes Alexander's ring on Juliana's hand.",
+      "peak": "The Duchess gasps at the Ashbourne crest on Juliana's ring",
+      "ends_on": "The Duchess demands to know where Juliana got the ring",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 27,
+      "summary": "The Duchess realizes Alexander is alive; Catherine and Rupert arrest Juliana for witchcraft.",
+      "peak": "Catherine exposes Juliana as Lady Juliana Ashcroft and seizes her ledger",
+      "ends_on": "Juliana is dragged away as Catherine gloats over her mother's book",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 28,
+      "summary": "Catherine exposes Juliana's noble identity and steals her mother's ledger and locket.",
+      "peak": "The Duchess accuses Catherine and Rupert of poisoning her before collapsing",
+      "ends_on": "Catherine orders Juliana to the wet cells and claims the ledger as evidence",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 29,
+      "summary": "Juliana is thrown in a dungeon, defiant that Alexander will come for her.",
+      "peak": "Juliana screams she saved the Duchess as the iron door slams",
+      "ends_on": "Juliana grips the bars, whispering Alexander's name as wedding bells toll",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 30,
+      "summary": "Rupert and Sterling plan a show trial for witchcraft to execute Juliana before the wedding.",
+      "peak": "Sterling orders Rupert to manufacture evidence and frame the trial",
+      "ends_on": "Juliana clutches a rag in her cell as the episode cuts to black",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 31,
+      "summary": "Catherine burns Juliana's ledger, but Juliana refuses to break, declaring her love for Alexander.",
+      "peak": "Catherine holds a branding iron to Juliana's face as the ledger burns",
+      "ends_on": "Juliana tells Catherine cruelty doesn't make her powerful",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 32,
+      "summary": "Juliana's defiance shames Catherine; a maid is coerced into false testimony of witchcraft.",
+      "peak": "Juliana declares she was freed by Gerald's rejection and found a man of honor",
+      "ends_on": "Catherine raises the branding iron to Juliana's eye",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 33,
+      "summary": "Lord Sterling forces a maid to lie that Juliana performed witchcraft rituals.",
+      "peak": "Sterling threatens the maid's brother to secure false testimony",
+      "ends_on": "The maid weeps, apologizing to Juliana as Sterling dismisses her",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 34,
+      "summary": "Juliana stands trial, refuses to renounce healing, and is sentenced to death.",
+      "peak": "The Judge raises his hand in judgment over Juliana",
+      "ends_on": "Juliana stands unbroken before the court as the gavel falls",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 35,
+      "summary": "Alexander's mother escapes the manor and reunites with him, revealing Rupert and Sterling's betrayal.",
+      "peak": "Alexander's mother recognizes him and reveals she was told he died",
+      "ends_on": "Alexander vows the dead Duke is coming home before the wedding",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 36,
+      "summary": "Alexander learns the full truth of the ambush and vows to reclaim his title before Juliana's execution.",
+      "peak": "Alexander's mother confirms Juliana is to be executed after Rupert's wedding",
+      "ends_on": "Alexander stares into the snowy woods, declaring he has two days",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 37,
+      "summary": "Rupert and Catherine prepare their wedding and Juliana's execution; Juliana remains defiant in her cell.",
+      "peak": "Clarissa gloats that Juliana's execution will be a lesson to all women",
+      "ends_on": "Juliana curls her fingers in defiance, saying they cannot take who she is",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 38,
+      "summary": "A kind guard feeds Juliana; she hears wedding bells and prepares to die.",
+      "peak": "Juliana hears the cathedral bells and realizes the wedding has begun",
+      "ends_on": "Juliana grips the bars, smiling defiantly and whispering Alexander's name",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 39,
+      "summary": "Alexander's loyalists infiltrate the manor; Alexander cuts his hair and dons ducal attire.",
+      "peak": "Alexander shears his hair and declares 'Enough hiding. Today he comes home.'",
+      "ends_on": "Alexander marches forward in ducal splendor, vowing to bring his wife home",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 40,
+      "summary": "Nobles gather for Rupert and Catherine's wedding; Rupert expects total victory.",
+      "peak": "Rupert and Catherine exchange triumphant smiles at the altar",
+      "ends_on": "The organ chord holds as the ceremony begins",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 41,
+      "summary": "Catherine halts the wedding to display Juliana as a prisoner; Alexander bursts in, revealing himself as Duke.",
+      "peak": "The cathedral doors explode and Alexander strides through the smoke",
+      "ends_on": "The royal guards refuse to arrest Alexander, saluting him as Duke",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 42,
+      "summary": "The Crown Official reads the report proving Rupert and Sterling's treason; they are arrested.",
+      "peak": "The Crown Official names Rupert and Sterling as the traitors who leaked Alexander's position",
+      "ends_on": "Alexander's mother proclaims him the rightful Duke before the assembly",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 43,
+      "summary": "Alexander confronts Rupert and Sterling with the evidence; the Dowager Duchess denounces them.",
+      "peak": "The Crown Official reads the damning War Office report",
+      "ends_on": "Police constables arrest Sterling as Rupert screams",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 44,
+      "summary": "Sterling and Rupert are arrested; Catherine pleads for Alexander's love but he rejects her.",
+      "peak": "Alexander coldly tells Catherine she loved the title, not him",
+      "ends_on": "Alexander walks away from Catherine toward Juliana",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 45,
+      "summary": "Alexander and Juliana reunite; a High Priest declares their marriage invalid due to lack of Crown license.",
+      "peak": "Alexander proclaims Juliana his lawful wife and Duchess before the nobility",
+      "ends_on": "The High Priest declares their marriage a lie before the Crown",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 46,
+      "summary": "The High Priest gives them ten days to prove their marriage before the High Council; Alexander accepts.",
+      "peak": "Juliana shouts 'God married us! You are just angry no one asked you first!'",
+      "ends_on": "Alexander accepts the ten-day wager as the guards lower their weapons",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 47,
+      "summary": "Catherine schemes with a conspirator; Juliana offers Catherine a position as scullery maid instead of exile.",
+      "peak": "Juliana hands Catherine a servant's apron and keys",
+      "ends_on": "Catherine accepts the apron, humiliated but alive",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 48,
+      "summary": "Catherine plots to use Father Thomas to delay the Council; Agnes is tasked with secrecy.",
+      "peak": "Catherine tells Agnes ten days is a door that can be closed from the other side",
+      "ends_on": "Catherine orders Agnes to bring Father Thomas secretly tonight",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 49,
+      "summary": "Catherine and Father Thomas conspire to manipulate the hearing and secure her future.",
+      "peak": "Catherine and Father Thomas clasp hands in a pact of mutual silence",
+      "ends_on": "They agree to keep the hearing unresolved and feed Catherine council secrets",
+      "ends_unresolved": true
+    },
+    {
+      "ep": 50,
+      "summary": "Agnes discovers Catherine and Father Thomas in bed, exposing their affair.",
+      "peak": "Agnes gasps seeing Catherine and the shirtless priest entwined",
+      "ends_on": "Agnes stands shocked in the doorway as the lovers lie together",
+      "ends_unresolved": true
+    }
+  ],
+  "arcs": [
+    {
+      "name": "Wedding Humiliation and Marriage to Stranger",
+      "from_ep": 1,
+      "to_ep": 7,
+      "summary": "Juliana is jilted at the altar, disowned by her family, and rescued by a bearded stranger who marries her."
+    },
+    {
+      "name": "Cottage Life and Growing Bond",
+      "from_ep": 8,
+      "to_ep": 18,
+      "summary": "Juliana and Alexander build a quiet life in a forest cottage, deepening their love through healing, danger, and a fire that destroys their home."
+    },
+    {
+      "name": "Infiltration and Poison Discovery",
+      "from_ep": 19,
+      "to_ep": 24,
+      "summary": "Juliana enters Ashburton Manor as a maid to save the poisoned Dowager Duchess, enduring abuse from Catherine."
+    },
+    {
+      "name": "Arrest and Witchcraft Trial",
+      "from_ep": 25,
+      "to_ep": 34,
+      "summary": "Juliana is arrested, her identity exposed, and subjected to a rigged witchcraft trial orchestrated by Rupert and Sterling."
+    },
+    {
+      "name": "Alexander's Return and Revelation",
+      "from_ep": 35,
+      "to_ep": 42,
+      "summary": "Alexander's mother escapes, revealing the truth; Alexander returns with loyalists, exposes the conspirators, and reclaims his title."
+    },
+    {
+      "name": "Marriage Validation Conflict",
+      "from_ep": 43,
+      "to_ep": 46,
+      "summary": "The High Priest invalidates their marriage; Alexander and Juliana have ten days to prove its legitimacy before the High Council."
+    },
+    {
+      "name": "Catherine's Final Schemes",
+      "from_ep": 47,
+      "to_ep": 50,
+      "summary": "Catherine conspires with Father Thomas to delay the Council, while Juliana offers her mercy as a scullery maid; their affair is discovered."
+    }
+  ],
+  "title": "I Married a Broken Soldier. He was a Duke",
+  "_check": {
+    "labels_total": 64,
+    "labels_unmapped": [],
+    "episodes_summarised": 50,
+    "episodes_total": 50
+  }
+}

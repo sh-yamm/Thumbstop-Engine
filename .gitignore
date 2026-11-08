@@ -12,6 +12,7 @@
 !/deploy/
 !/.github/
 !/.streamlit/
+!/data/
 
 __pycache__/
 .pytest_cache/

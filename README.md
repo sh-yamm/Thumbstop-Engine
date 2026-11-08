@@ -23,7 +23,7 @@ For every promo you get:
 | **Caption** | an optional one-line ad caption (and an alternative), every claim checked against the script |
 | **Checks** | the rule checks it passed, its ad-policy rating, and any warnings for the editor |
 
-Built for the Kuku AI Generalist Assignment (Problem 1, "Find the Promos"). The screenplays used to develop it are Kuku's confidential content and are **not** in this repository; every example below is invented.
+Built for the Kuku AI Generalist Assignment (Problem 1, "Find the Promos"). The [`data/`](data/) folder holds the assignment show (its 50 screenplays and the delivered run), included with permission so the web app runs anywhere. The examples in this README are invented.
 
 ---
 
@@ -497,6 +497,7 @@ Thumbstop-Engine/
 ├── .streamlit/config.toml       the app's theme
 ├── deploy/                      Hugging Face Space: Dockerfile, Space README, push_data.py, push_space.py
 ├── .github/workflows/           keep-awake.yml: opens the app every 15 minutes
+├── data/                        the assignment show for the app: pack/ (screenplays), run/ (delivered run), cache/ (its saved answers)
 │
 ├── thumbstop/                   the package
 │   ├── __main__.py              python -m thumbstop  →  cli.main()
@@ -668,24 +669,22 @@ A Streamlit app in [`app/`](app/) puts the pipeline in a browser, with three pag
 
 ```bash
 pip install -r app/requirements.txt          # adds streamlit and huggingface_hub
-streamlit run app/streamlit_app.py           # Demo needs a finished run; Live run needs NVIDIA_API_KEY
+streamlit run app/streamlit_app.py           # Demo works straight away (data/); Live run needs NVIDIA_API_KEY
 ```
 
-**Where its data comes from.** Run locally, the app reads `pack/<show>/`, `outputs/final_run/` and `.cache/` from the working folder. On a Hugging Face Space, the screenplays, the delivered run and the saved answers live in a **private** Hugging Face dataset (the input pack must not be published), downloaded at start-up with a token kept as a Space secret ([`app/data.py`](app/data.py)).
+**Where its data comes from** ([`app/data.py`](app/data.py)): the repository's [`data/`](data/) folder, which holds the show's screenplays (`data/pack/`), the delivered run (`data/run/`) and the 148 saved model answers that run used (`data/cache/`), so the Demo replays it with no API key. Without `data/`, it falls back to `pack/`, `outputs/final_run/` and `.cache/` in the working folder. It can also download the same layout from a private Hugging Face dataset (`THUMBSTOP_DATA_REPO` plus an `HF_TOKEN` secret).
 
-**Deploying to a Hugging Face Space** ([`deploy/`](deploy/)):
+**Hosting on Streamlit Community Cloud** (free):
 
-```bash
-python deploy/push_data.py                   # creates the private dataset (checks it is private first) and uploads the data
-python deploy/push_space.py --secrets        # creates the public Space (Docker + Streamlit), sets HF_TOKEN and NVIDIA_API_KEY
-```
+1. At [share.streamlit.io](https://share.streamlit.io), create an app from this repository: branch `main`, main file `app/streamlit_app.py`, Python 3.12.
+2. In its secrets, set `NVIDIA_API_KEY` (for live runs) and `THUMBSTOP_PUBLIC_URL` (the app's address, for the keep-awake visits).
 
-The Space holds only the code; [`deploy/Dockerfile`](deploy/Dockerfile) runs Streamlit on port 8501.
+Hugging Face Spaces now need a paid plan for Docker and Streamlit apps, but [`deploy/`](deploy/) still holds a ready Dockerfile and upload scripts for that route.
 
-**Keeping it awake.** Hugging Face pauses a free Space after 48 hours without visits. Two things prevent that:
+**Keeping it awake.** Streamlit Community Cloud puts an app to sleep after 12 hours without visitors, and only a real browser visit counts (a plain HTTP request does not). So:
 
-- a background process started with the container ([`app/keepalive.py`](app/keepalive.py)) visits the Space's own page every 15 minutes (`THUMBSTOP_KEEPALIVE_MINUTES`); the footer shows its last visit;
-- a scheduled GitHub Action ([`.github/workflows/keep-awake.yml`](.github/workflows/keep-awake.yml)) opens the app in a headless browser every 15 minutes. That is a real visit, and it also wakes the Space if it has gone to sleep (which would have stopped the first process). GitHub pauses scheduled workflows in a repository with no activity for 60 days.
+- a scheduled GitHub Action ([`.github/workflows/keep-awake.yml`](.github/workflows/keep-awake.yml)) opens the app in a headless browser every 15 minutes, and clicks its wake-up button if it has gone to sleep. The address is the repository variable `APP_URL` (default `https://thumbstop-engine.streamlit.app/`). GitHub pauses scheduled workflows in a repository with no activity for 60 days;
+- inside the app, a background thread ([`app/keepalive.py`](app/keepalive.py)) also visits its own address every 15 minutes (`THUMBSTOP_KEEPALIVE_MINUTES`), and the footer shows its last visit. In the Docker image this runs as a separate process.
 
 ---
 
@@ -702,7 +701,7 @@ python -m pytest -q
 | `test_app.py` | the web app without a browser: where its data is found, a failed download reported instead of a crash, a live run in the background that saves its state and survives a restart, interrupted and failed runs, the time estimate, the keep-awake visits, the model check, and a headless render of every page |
 | `test_pipeline_fake.py` | the **whole pipeline end to end with a fake model** that picks real line IDs from its prompt: a too-long promo is caught and repaired, the stages run in order, captions come after ranking, progress events are sent, and every output file is written. Also: a judge answer without IDs is matched by position; a caption outage still writes every output with no caption shown; a failed fact check hides only that promo's lines |
 
-No test calls a model or needs a key. Tests that need screenplays look for `THUMBSTOP_TEST_PACK` (or a folder under `./pack/`) and are skipped without one.
+No test calls a model or needs a key. Tests that need screenplays use `THUMBSTOP_TEST_PACK`, or else the first show under `./pack/` or `./data/pack/`.
 
 ---
 
