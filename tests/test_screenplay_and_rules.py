@@ -1,8 +1,8 @@
 """Parser and rule-check tests. The first three need no data; the rest run on any screenplay folder (see conftest)."""
 import pytest
 
-from promo_finder.core.parse import _split_label, sec_to_ts, ts_to_sec
-from promo_finder.core.validate import Segment, check_hook_line, check_promo, snap_segment, tiou
+from thumbstop.rules import Segment, check_hook_line, check_promo, snap_segment, tiou
+from thumbstop.screenplay.parse import sec_to_ts, split_label, ts_to_sec
 
 
 def test_time_roundtrip():
@@ -11,8 +11,8 @@ def test_time_roundtrip():
 
 
 def test_speaker_label_with_several_parentheses():
-    assert _split_label("MASKED MAN (Off-screen) (Dismissive)") == ("MASKED MAN", ["Dismissive"], True)
-    assert _split_label("THE DRIVER (Narrator) (Cold, Calculating)") == (
+    assert split_label("MASKED MAN (Off-screen) (Dismissive)") == ("MASKED MAN", ["Dismissive"], True)
+    assert split_label("THE DRIVER (Narrator) (Cold, Calculating)") == (
         "THE DRIVER", ["Narrator", "Cold", "Calculating"], False)
 
 

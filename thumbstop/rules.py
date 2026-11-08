@@ -1,19 +1,24 @@
-"""S3 VALIDATE & SNAP: event-ID ranges -> exact timestamps, plus hard-rule checks (no LLM).
+"""The brief's hard rules, enforced in code (no model involved).
 
-The LLM never writes timestamps. It picks event IDs; this module turns them into
-start/end times snapped to shot cuts, and checks the brief's rules.
+Models never write timestamps. They pick line IDs; snap_segment turns an ID range into exact start and end times
+snapped to shot cuts, and check_promo / check_hook_line test every rule that code can measure.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .parse import Episode, Event, sec_to_ts
+from .screenplay.parse import Episode, Event, Show, event_index, sec_to_ts
 
-MIN_LEN, MAX_LEN = 20.0, 60.0      # brief: 20-60 s promo
-HOOK_WINDOW = 3.0                   # brief: hook in the first 3 s
-MAX_SEGMENTS = 3                    # our assumption
-SNAP_MAX = 2.0                      # max seconds we move a boundary to reach a shot cut
-EPS = 0.15                          # timing tolerance
+MIN_LEN, MAX_LEN = 20.0, 60.0      # brief: a 20-60 s promo
+HOOK_WINDOW = 3.0                   # brief: the hook lands in the first 3 s
+MAX_SEGMENTS = 3                    # our assumption: at most 3 joined moments
+SNAP_MAX = 2.0                      # the furthest a boundary moves to reach a shot cut (s)
+EPS = 0.15                          # timing tolerance (s)
+TARGET = (35.0, 55.0)               # soft length target given to the models (the hard rule is 20-60 s)
+SHORT_WARN = 30.0                   # shorter than this is allowed but flagged
+
+HOOK_LINE_MAX_CHARS = 90            # TikTok ad text ~100; Meta shows ~125
+HOOK_LINE_MAX_WORDS = 18
 
 
 @dataclass
@@ -33,35 +38,35 @@ class Segment:
 
 @dataclass
 class Check:
-    errors: list[str] = field(default_factory=list)     # hard rule broken -> promo invalid
-    warnings: list[str] = field(default_factory=list)   # soft issue -> shown to editor
+    errors: list[str] = field(default_factory=list)     # a hard rule is broken -> the promo is invalid
+    warnings: list[str] = field(default_factory=list)   # a soft issue -> shown to the editor
 
     @property
     def ok(self) -> bool:
         return not self.errors
 
 
-def _event_index(show: dict[int, Episode]) -> dict[str, Event]:
-    return {e.id: e for ep in show.values() for e in ep.events}
+def segments_of(rec: dict) -> list[Segment]:
+    return [Segment(s["episode"], s["start_sec"], s["end_sec"]) for s in rec["segments_resolved"]]
 
 
 def _splits_dialogue(ep: Episode, t: float) -> Event | None:
-    """Return a dialogue event that a cut at time t would chop mid-line."""
+    """A dialogue line that a cut at time t would chop mid-sentence, if any."""
     for e in ep.events:
         if e.kind == "dialogue" and e.start + EPS < t < e.end - EPS:
             return e
     return None
 
 
-def snap_segment(show: dict[int, Episode], first_id: str, last_id: str) -> Segment:
-    """Turn an inclusive event-ID range into a Segment snapped to shot cuts.
+def snap_segment(show: Show, first_id: str, last_id: str) -> Segment:
+    """Turn an inclusive line-ID range into a Segment snapped to shot cuts.
 
-    start: the latest shot cut at/before the first event (within SNAP_MAX s) that does
-           not chop a line; otherwise the first event's own start.
-    end:   the end of the last story beat in range, extended to the next shot cut
-           (within SNAP_MAX s) if that does not chop a line.
+    start: the latest shot cut at or before the first line (within SNAP_MAX s) that does not chop a line;
+           otherwise the first line's own start.
+    end:   the end of the last story beat in range, extended to the next shot cut (within SNAP_MAX s) if that
+           does not chop a line.
     """
-    idx = _event_index(show)
+    idx = event_index(show)
     if first_id not in idx or last_id not in idx:
         missing = [i for i in (first_id, last_id) if i not in idx]
         raise KeyError(f"unknown event id(s): {missing}")
@@ -91,7 +96,7 @@ def snap_segment(show: dict[int, Episode], first_id: str, last_id: str) -> Segme
     return Segment(ep.number, round(start, 3), round(end, 3))
 
 
-def check_promo(show: dict[int, Episode], segments: list[Segment]) -> Check:
+def check_promo(show: Show, segments: list[Segment]) -> Check:
     """Hard rules (errors) and soft issues (warnings) for one promo."""
     ck = Check()
     if not 1 <= len(segments) <= MAX_SEGMENTS:
@@ -139,15 +144,11 @@ def check_promo(show: dict[int, Episode], segments: list[Segment]) -> Check:
     return ck
 
 
-HOOK_LINE_MAX_CHARS = 90    # TikTok ad text ~100; Meta shows ~125
-HOOK_LINE_MAX_WORDS = 18
+def check_hook_line(show: Show, text: str, evidence: list[str], last_episode: int) -> Check:
+    """Code checks for a caption (the fact check separately tests that its claims are supported).
 
-
-def check_hook_line(show: dict[int, Episode], text: str, evidence: list[str], last_episode: int) -> Check:
-    """Code-level checks for a custom hook line (the judge separately checks that claims are supported).
-
-    Evidence may be an event ID (E012-045), an episode logline (L005) or the show title (TITLE),
-    and may not come from an episode after the promo's last episode.
+    Evidence may be a line ID (E012-045), an episode logline (L005) or the show title (TITLE), and may not come
+    from an episode after the promo's last episode (no spoilers).
     """
     ck = Check()
     if len(text) > HOOK_LINE_MAX_CHARS:
@@ -156,7 +157,7 @@ def check_hook_line(show: dict[int, Episode], text: str, evidence: list[str], la
         ck.errors.append(f"hook line is {len(text.split())} words; max {HOOK_LINE_MAX_WORDS}")
     if not evidence:
         ck.errors.append("hook line cites no evidence")
-    idx = _event_index(show)
+    idx = event_index(show)
     for ev in evidence:
         if ev == "TITLE":
             continue
@@ -175,13 +176,11 @@ def check_hook_line(show: dict[int, Episode], text: str, evidence: list[str], la
 
 
 def tiou(a: list[Segment], b: list[Segment]) -> float:
-    """Temporal IoU between two promos (multi-segment, per-episode time)."""
-    def spans(p):
-        return [(s.episode, s.start, s.end) for s in p]
+    """Temporal overlap (intersection over union) of two promos, per episode."""
     inter = 0.0
-    for ea, sa, xa in spans(a):
-        for eb, sb, xb in spans(b):
-            if ea == eb:
-                inter += max(0.0, min(xa, xb) - max(sa, sb))
+    for sa in a:
+        for sb in b:
+            if sa.episode == sb.episode:
+                inter += max(0.0, min(sa.end, sb.end) - max(sa.start, sb.start))
     union = sum(s.length for s in a) + sum(s.length for s in b) - inter
     return inter / union if union > 0 else 0.0

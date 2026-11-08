@@ -1,6 +1,6 @@
 # Prompts: one system prompt per pipeline stage
 
-The code loads these files through `promo_finder/core/promptlib.py`. You can edit them without touching code. Two shared blocks are spliced in:
+The code loads these files through `thumbstop/prompts/__init__.py`. You can edit them without touching code. Two shared blocks are spliced in:
 - `<<HOUSE>>` → `house_context.md`, which describes the promo desk, the brief's definition of a promo, and what works in microdrama ads;
 - `<<HOOK_LINE_STYLE>>` → `hook_line_style.md`, the caption style guide.
 
@@ -22,7 +22,7 @@ This README is not sent to any model.
 2. **Each prompt is an agent brief:** role and audience, what it receives, the quality bar, traps seen in testing, a private step-by-step method, a checklist, and a strict JSON contract.
 3. **Show-agnostic.** No prompt contains any show's names or plot. Examples use invented content and placeholder IDs (`E000-…`), so the tool behaves the same on a new show.
 4. **Code verifies what code can verify:** length, the 3-s hook, mid-line cuts, caption length, names and spoiler evidence. The prompts state the same rules only so that fewer repairs are needed.
-5. **The judge works blind, and nobody scores their own picks.** The promo finder returns no self-scores. The judge sees only the title and the clips, never the finder's reasoning. Ideally the judge and ranker run on a different model family from the finder; on NVIDIA's free tier only Nemotron was fast enough to judge a full show, so the shipped config uses it, and a faster endpoint can split them with one config line. The fact checker is a different family (Mistral).
+5. **The judge works blind, and nobody scores their own picks.** The promo finder returns no self-scores. The judge sees only the title and the clips, never the finder's reasoning. The judge runs on a different model family from the finder (Step 5 against Nemotron), and so does the fact checker against the caption writer (Mistral against Gemma). The ranker shares Nemotron with the finder, but it sees the judge's scores, not the finder's reasoning.
 
 ## Where the rules come from
 | Rule | Reason |

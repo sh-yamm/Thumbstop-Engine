@@ -15,27 +15,30 @@ Built for the Kuku AI Generalist Assignment (Problem 1). The input screenplays a
 ```bash
 pip install -r requirements.txt
 cp .env.example .env              # put your API key in .env (free key: build.nvidia.com)
-python -m promo_finder.run --show "path/to/show folder" --title "Show Title" --out outputs/myshow
-python -m pytest -q               # offline tests with a fake model; set PROMO_TEST_PACK=<show folder> for the data tests
+python -m thumbstop --show "path/to/show folder" --title "Show Title" --out outputs/myshow
+python -m pytest -q               # offline tests with a fake model; set THUMBSTOP_TEST_PACK=<show folder> for the data tests
 ```
 - The show folder contains one `.txt` screenplay per episode, in the input-pack format: scenes, then every camera shot, action and line with `Start: (mm:ss.xx) | End: (mm:ss.xx)`.
 - `--episodes 1-10` runs on part of a show, and `--no-montage` skips cross-episode promos.
 - Every model call is cached in `.cache/`, so an interrupted or repeated run resumes almost for free.
+- `--offline` rebuilds a run from the cache alone (no API key, no calls); `--fresh` ignores the cache.
 
 ## Swapping models
-Every pipeline role has its own line in [`config.yaml`](config.yaml). You can also override one per run with an environment variable, e.g. `PROMO_MODEL_JUDGE=<model id>`.
+Every pipeline role has its own line in [`config.yaml`](config.yaml). You can also override one per run with an environment variable, e.g. `THUMBSTOP_MODEL_JUDGE=<model id>`.
 - **Any OpenAI-compatible endpoint works:** change `api.base_url` and the key variable.
 - **On NVIDIA's free tier** (about 40 requests/min, bursts rejected), keep `api.max_concurrent` at 4–5. Raise it on a paid endpoint.
 - **Pipeline settings** live under `pipeline:` in the config: promos kept per episode, number of ranking passes, how many promos get captions.
 
-**Default models**, chosen by comparing several free models on the same tasks for each role:
+**Default models**, chosen by comparing several free models on the same tasks for each role and keeping the best one:
 
 | Role | Model |
 |---|---|
-| Show reference, promo finder, montage, judge, ranker, captions | NVIDIA Nemotron 3 Ultra |
+| Show reference, promo finder, montage, ranker | NVIDIA Nemotron 3 Ultra |
+| Judge | StepFun Step 5 |
+| Captions | Google Gemma 4 31B |
 | Fact check | Mistral Large 4 (low reasoning effort) |
 
-The judge works blind: it sees only the title and the clips, never the promo finder's reasoning. Step 5 and Gemma 4 judged best in the comparison, but on the free tier they could not finish a full show within the gateway's 15-minute call limit, so Nemotron judges too. On a faster endpoint, set the judge to a **different model family** from the promo finder (one line). The fact check already uses a different family.
+The checks run on other model families than the work they check: Step 5 judges the promos Nemotron finds, blind (it sees only the title and the clips), and Mistral fact-checks the captions Gemma writes.
 
 ## How it works
 ```mermaid
@@ -77,25 +80,21 @@ Timestamps are created once, by code, from line IDs, never by a model.
 | 7 | Captions | 1 call per 20 promos | Writes a main and an alt ad line for the top promos, as one batch so the voices vary. Code checks length, character names and spoiler evidence; failing lines get one repair call |
 | 8 | Fact check | 1 call per promo | Checks every claim in a caption against the cited script lines. A failing line gets one fix; otherwise it is hidden. The promo itself stays |
 
-About 140 model calls for a 50-episode show.
+About 150 model calls for a 50-episode show.
 
 ## Repository layout
 ```
-promo_finder/
-  run.py                 pipeline entry point: runs the stages in order, writes the outputs
-  core/
-    parse.py             screenplay parser and the timed, ID'd renderings shown to the models
-    validate.py          hard rules: snapping to camera cuts, 20–60 s, 3-s hook, caption checks
-    llm.py               OpenAI-compatible client: model per role, rate limit, retries, cache, call log
-    promptlib.py         loads the stage prompts below
-  stages/
-    reference.py         1  show reference
-    propose.py           2–4  promo finder, rule-check repair, montage
-    judge.py             5  judge (+ the caption fact check)
-    rank.py              5–6  keep the best per episode, final ranking
-    captions.py          7–8  captions, caption checks, fact check
+thumbstop/
+  pipeline.py            the whole pipeline, stage by stage (start reading here)
+  cli.py, __main__.py    command line: python -m thumbstop ...
+  config.py              project paths, .env and config.yaml loading
+  output.py              writes promos.json / .csv, report.md, candidates.jsonl, excluded.json, summary.json
+  rules.py               the brief's hard rules in code: snapping to camera cuts, 20–60 s, 3-s hook, caption checks
+  llm/                   OpenAI-compatible client: model per role, retries, rate limit, answer cache, call log
+  screenplay/            parse.py (screenplay -> timed, ID'd lines) and render.py (the view each model sees)
+  stages/                s1_reference … s8_fact_check, plus selection.py, numbered as in the pipeline
   prompts/               one editable system prompt per stage (Markdown) + a README on the design
-tests/                   offline tests: parser, rules, full pipeline with a fake model
+tests/                   offline tests: parser, rules, model client, full pipeline with a fake model
 config.yaml              models per role, API settings, pipeline settings
 ```
 

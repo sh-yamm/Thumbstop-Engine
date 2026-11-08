@@ -1,19 +1,19 @@
-"""S0 PARSE: turn screenplay .txt files into timed, ID'd events (no LLM).
+"""Stage 0, parse: screenplay .txt files -> episodes of timed, ID'd lines. No model involved.
 
-File format (per episode):
+File format (one file per episode):
     EPISODE NUMBER: Episode N / EPISODE LOGLINE: ... / CONTINUITY NOTES: ...
-    SCENE 01 / Scene heading / Scene start / Scene end   (header case varies: Ep 6 is UPPERCASE)
+    SCENE 01 / Scene heading / Scene start / Scene end   (header case varies)
     **LABEL (tag) (tag):**
     Start: (mm:ss.xx) | End: (mm:ss.xx)
     one line of text
 
-LABEL is CAMERA, ACTION, SOUND FX, or a speaker name (= dialogue).
-CAMERA events mark shot boundaries -> the legal cut points for a promo.
+LABEL is CAMERA, ACTION, SOUND FX, or a speaker name (= dialogue). Every line gets an ID such as E012-047
+(episode 12, line 47). CAMERA lines mark shot boundaries, which are the legal cut points for a promo.
 """
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 NON_DIALOGUE = {"CAMERA": "camera", "ACTION": "action", "SOUND FX": "sfx"}
@@ -49,14 +49,15 @@ def sec_to_ts(sec: float) -> str:
 
 @dataclass
 class Event:
+    """One line of the screenplay: dialogue, an action, a sound effect or a camera direction."""
     id: str            # e.g. "E012-047"
     episode: int
-    idx: int           # order within episode (file order)
+    idx: int           # order within the episode (file order)
     kind: str          # dialogue | action | sfx | camera
-    speaker: str       # raw base label for dialogue, "" otherwise
-    tags: list[str]    # emotion/delivery tags, e.g. ["Cold", "Commanding"]
+    speaker: str       # the base speaker label for dialogue, "" otherwise
+    tags: list[str]    # emotion and delivery tags, e.g. ["Cold", "Commanding"]
     offscreen: bool    # O.S. / V.O. / Off-screen
-    start: float
+    start: float       # seconds on the episode's own clock
     end: float
     text: str
     scene: int
@@ -78,7 +79,7 @@ class Episode:
     scenes: list[Scene]
     events: list[Event]
     source: str
-    cut_points: list[float] = field(default_factory=list)
+    cut_points: list[float] = field(default_factory=list)   # shot and scene starts: where a promo may be cut
 
     @property
     def duration(self) -> float:
@@ -91,7 +92,10 @@ class Episode:
         return d
 
 
-def _split_label(label: str) -> tuple[str, list[str], bool]:
+Show = dict[int, Episode]
+
+
+def split_label(label: str) -> tuple[str, list[str], bool]:
     """'THE FORMER GROOM (Off-screen) (Dismissive)' -> ('THE FORMER GROOM', ['Dismissive'], True)"""
     base = re.sub(r"\s*\(.*$", "", label).strip()
     groups = re.findall(r"\(([^)]*)\)", label)
@@ -129,7 +133,7 @@ def parse_episode(path: str | Path) -> Episode:
             speaker, tags, off = "", [], False
         else:
             kind = "dialogue"
-            speaker, tags, off = _split_label(label)
+            speaker, tags, off = split_label(label)
         scene = max([n for pos, n in scene_starts if pos < m.start()], default=1)
         events.append(Event(
             id=f"E{number:03d}-{i + 1:03d}", episode=number, idx=i + 1, kind=kind,
@@ -148,8 +152,8 @@ def parse_episode(path: str | Path) -> Episode:
     return ep
 
 
-def load_show(folder: str | Path) -> dict[int, Episode]:
-    """Parse every .txt in a folder -> {episode_number: Episode}, sorted."""
+def load_show(folder: str | Path) -> Show:
+    """Parse every .txt in a folder -> {episode_number: Episode}, sorted by episode."""
     eps = [parse_episode(p) for p in sorted(Path(folder).glob("*.txt"))]
     if not eps:
         raise FileNotFoundError(f"no .txt screenplays in {folder}")
@@ -159,60 +163,6 @@ def load_show(folder: str | Path) -> dict[int, Episode]:
     return dict(sorted(show.items()))
 
 
-def render_episode_slim(ep: Episode) -> str:
-    """Story-only rendering for whole-series reading (reference): no IDs, no per-line times, no camera lines.
-
-    Keeps a sense of time cheaply: the episode length and each scene's start time (seconds).
-    Per-line IDs/times roughly double the token count of the full series, which pushed long calls past the
-    free gateway's ~15 min limit.
-    """
-    lines = [f"=== EPISODE {ep.number} · {ep.duration:.0f} s ==="]
-    scenes = {sc.num: sc for sc in ep.scenes}
-    cur = None
-    for e in ep.events:
-        if e.scene != cur:
-            cur = e.scene
-            sc = scenes.get(cur)
-            if sc:
-                lines.append(f"--- scene {sc.num} at {sc.start:.0f} s ---")
-        if e.kind == "camera":
-            continue
-        if e.kind == "dialogue":
-            tag = f" ({', '.join(e.tags)})" if e.tags else ""
-            lines.append(f"{e.speaker}{tag}: {e.text}")
-        else:
-            lines.append(f"[{e.kind.upper()}] {e.text}")
-    return "\n".join(lines)
-
-
-def render_episode(ep: Episode, with_camera: bool = False, t0: float = 0.0, t1: float | None = None) -> str:
-    """ID'd, time-aware script text for LLM prompts.
-
-    Every line shows its ID and its time on the episode's own clock in plain seconds (easy to subtract, so the
-    model can measure a segment: end of last event - start of first event). Scene headers give time spans;
-    camera lines are shown as [SHOT] (the legal cut points). Code, not the model, computes output timestamps.
-    """
-    t1 = ep.duration if t1 is None else t1
-    lines = [f"=== EPISODE {ep.number} · {ep.duration:.1f} s long ==="]
-    scenes = {sc.num: sc for sc in ep.scenes}
-    cur = None
-    for e in ep.events:
-        if e.start < t0 or e.start > t1:
-            continue
-        if e.scene != cur:
-            cur = e.scene
-            sc = scenes.get(cur)
-            if sc:
-                lines.append(f"--- Scene {sc.num} · {sc.start:.1f}–{sc.end:.1f} s ({sc.end - sc.start:.1f} s) · "
-                             f"{sc.heading.strip()} ---")
-        if e.kind == "camera" and not with_camera:
-            continue
-        head = f"{e.id}  {e.start:.1f}–{e.end:.1f}s"
-        if e.kind == "dialogue":
-            tag = f" ({', '.join(e.tags)})" if e.tags else ""
-            off = " [O.S.]" if e.offscreen else ""
-            lines.append(f"{head}  {e.speaker}{off}{tag}: {e.text}")
-        else:
-            label = {"camera": "SHOT", "action": "ACTION", "sfx": "SFX"}.get(e.kind, e.kind.upper())
-            lines.append(f"{head}  [{label}] {e.text}")
-    return "\n".join(lines)
+def event_index(show: Show) -> dict[str, Event]:
+    """Every line of the show by its ID."""
+    return {e.id: e for ep in show.values() for e in ep.events}

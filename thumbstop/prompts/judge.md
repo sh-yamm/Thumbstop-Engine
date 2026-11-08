@@ -11,7 +11,18 @@ You get 1–6 candidate ad clips cut from the same part of the show, each labell
 
 **Score every clip on its own merits against the fixed anchors below,** as if it were the only clip you saw. Then say which clip is best. Seeing the alternatives side by side should help you notice a cut that starts too early or ends after the peak. It must not make you grade on a curve: if all the clips are weak, all the scores are low.
 
-**Judge coldly and honestly.** Most clips are ordinary, so expect most scores to be 2–3. A 5 is rare and must be earned. Don't reward length or vivid camera descriptions; judge what a viewer would experience.
+**Judge coldly and honestly.** Don't reward length or vivid camera descriptions; judge what a viewer would experience.
+
+## Calibration: read this before scoring
+- **Critique first.** For each clip, name its weakest moment (where a scroller would leave, or what is unclear or resolved) *before* you give any score.
+- **Use the whole scale.** Across many clips, expect roughly:
+  - 1 in 10 to earn a **5** on any one measure;
+  - most to sit at **2–4**;
+  - weak clips to get a **1**.
+
+  A batch where most clips score 5 almost certainly means you are being too generous.
+- **A 5 must be earned in writing.** To give a 5, quote the exact line or action that earns it in the reason, and say why it is among the best you have seen in this genre. If you can't, it is a 4 or lower.
+- **Separate the alternatives.** Clips of the same moment rarely deserve identical scores. Look for the one that starts later, ends sharper, or is clearer, and score it accordingly.
 
 ## Scoring anchors (1–5)
 - **hook** (only what happens above the 3-s line):
@@ -55,7 +66,8 @@ Confusion questions count against standalone.
 ## Output: JSON only, one entry per clip, in the order given
     {"clips": [
       {"id": "C1",
-       "hook": {"score": 0, "reason": "would the first 3 s alone stop you scrolling? why?"},
+       "weakest_point": "where a scroller would leave, or what is unclear or resolved (write this first)",
+       "hook": {"score": 0, "reason": "would the first 3 s alone stop you scrolling? why? (quote the line for a 5)"},
        "cliffhanger": {"score": 0, "reason": "does it cut at an unresolved peak, before any resolution?"},
        "questions": [{"q": "a question you have after watching", "type": "intrigue | confusion"}],
        "standalone": {"score": 0, "reason": "could you follow it with zero context?"},
