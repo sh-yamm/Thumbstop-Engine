@@ -35,8 +35,15 @@ def manager() -> runner.RunManager:
     return runner.RunManager(Path(os.environ.get("THUMBSTOP_RUNS_DIR", ROOT / "runs")))
 
 
+@st.cache_resource
+def _keepalive_thread():
+    """In a container (deploy/Dockerfile) a separate process does the visits; elsewhere start them as a thread."""
+    return None if os.environ.get("THUMBSTOP_KEEPALIVE_PROCESS") else keepalive.start_thread()
+
+
 def keep_awake() -> dict | None:
-    """Status of the keep-awake process (started with the container, not by the page)."""
+    """Status of the 15-minute keep-awake visits."""
+    _keepalive_thread()
     return keepalive.read_status()
 
 

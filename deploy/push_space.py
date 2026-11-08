@@ -49,6 +49,8 @@ def main() -> None:
     a = ap.parse_args()
 
     api.create_repo(a.space, repo_type="space", space_sdk="docker", private=False, exist_ok=True)
+    # The brief asks for a link that opens for anyone who has it: the app is public (the data stays private).
+    api.update_repo_settings(a.space, repo_type="space", private=False)
     api.add_space_variable(a.space, "THUMBSTOP_DATA_REPO", a.data)
     if a.secrets:
         sys.path.insert(0, str(ROOT))
@@ -61,7 +63,8 @@ def main() -> None:
         print("secrets set: HF_TOKEN" + (", NVIDIA_API_KEY" if os.environ.get("NVIDIA_API_KEY") else ""))
     folder = stage()
     api.upload_folder(repo_id=a.space, repo_type="space", folder_path=folder, commit_message="Deploy Thumbstop Engine",
-                      delete_patterns=["thumbstop/**", "app/**", ".streamlit/**"])
+                      delete_patterns=["thumbstop/**", "app/**", ".streamlit/**",
+                                       "index.html", "style.css"])   # a new static Space's starter files
     print(f"uploaded; the Space builds at https://huggingface.co/spaces/{a.space}")
     print(f"app: https://{a.space.replace('/', '-').lower()}.hf.space/")
 

@@ -21,9 +21,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def space_url() -> str | None:
-    """The Space's public address; Hugging Face sets SPACE_HOST (e.g. user-space.hf.space). None when run locally."""
+    """The app's public address: SPACE_HOST on a Hugging Face Space, THUMBSTOP_PUBLIC_URL elsewhere (e.g. Streamlit
+    Community Cloud). None when run locally."""
     host = os.environ.get("SPACE_HOST")
-    return f"https://{host}/" if host else None
+    return f"https://{host}/" if host else (os.environ.get("THUMBSTOP_PUBLIC_URL") or None)
+
+
+def start_thread() -> "KeepAlive | None":
+    """The same 15-minute visits as a thread inside the app, for hosts where no second process can be started
+    (Streamlit Community Cloud). There, only a real browser visit counts as activity, so the GitHub Action does the
+    actual keeping-awake; this thread is a second line."""
+    url = space_url()
+    if not url:
+        return None
+    ka = KeepAlive(url, float(os.environ.get("THUMBSTOP_KEEPALIVE_MINUTES", "15")), status_path())
+    threading.Thread(target=ka.run_forever, kwargs={"first_delay": 30}, daemon=True, name="keepalive").start()
+    return ka
 
 
 def status_path() -> Path:

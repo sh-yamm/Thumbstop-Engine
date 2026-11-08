@@ -6,13 +6,14 @@ with the HF_TOKEN secret. They are downloaded once, at start-up, into THUMBSTOP_
 
     data/pack/<show>/*.txt     the screenplays
     data/run/                  the delivered full run (promos.json, summary.json, report.md, ...)
-    data/cache/                the saved model answers, which the demo replays
+    data/cache.tar.gz          the saved model answers (one archive, unpacked to data/cache/), which the demo replays
 
 Run locally, the app uses the working folder's own pack/, outputs/final_run/ and .cache/ instead.
 """
 from __future__ import annotations
 
 import os
+import tarfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -40,7 +41,17 @@ def first_show(base: Path) -> Path | None:
     return None
 
 
+def unpack_cache(base: Path) -> None:
+    """data/cache.tar.gz -> data/cache/ (once). Only plain files inside the archive's cache/ folder are extracted."""
+    archive, target = base / "cache.tar.gz", base / "cache"
+    if archive.exists() and not target.is_dir():
+        with tarfile.open(archive) as tar:
+            safe = [m for m in tar.getmembers() if m.isfile() and m.name.startswith("cache/") and ".." not in m.name]
+            tar.extractall(base, members=safe)
+
+
 def _from(base: Path, source: str) -> DataPaths:
+    unpack_cache(base)
     cache = base / "cache"
     return DataPaths(first_show(base / "pack"), base / "run", cache if cache.is_dir() else None, source)
 

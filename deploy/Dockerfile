@@ -8,7 +8,8 @@ ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     THUMBSTOP_DATA_DIR=/home/user/app/data \
-    THUMBSTOP_RUNS_DIR=/home/user/app/runs
+    THUMBSTOP_RUNS_DIR=/home/user/app/runs \
+    THUMBSTOP_KEEPALIVE_PROCESS=1
 WORKDIR /home/user/app
 
 COPY --chown=user requirements.txt ./requirements.txt

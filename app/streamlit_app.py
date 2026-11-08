@@ -13,7 +13,18 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import os  # noqa: E402
+
 import streamlit as st  # noqa: E402
+
+# Streamlit Community Cloud provides settings as st.secrets; the app and the pipeline read the environment.
+for _k in ("HF_TOKEN", "THUMBSTOP_DATA_REPO", "NVIDIA_API_KEY", "THUMBSTOP_PUBLIC_URL", "THUMBSTOP_KEEPALIVE_MINUTES"):
+    try:
+        _v = st.secrets.get(_k)
+    except Exception:  # noqa: BLE001  (no secrets file, e.g. locally)
+        _v = None
+    if _v and not os.environ.get(_k):
+        os.environ[_k] = str(_v)
 
 from app import state, ui  # noqa: E402
 from app.views import demo, how, live  # noqa: E402

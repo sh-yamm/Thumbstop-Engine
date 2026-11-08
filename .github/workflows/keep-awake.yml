@@ -1,6 +1,7 @@
-# Backup for the Space's own keep-awake process: every 15 minutes, open the app in a headless browser.
-# A browser visit runs the app (a plain HTTP request does not), counts as activity, and wakes a sleeping Space.
-name: Keep the Space awake
+# Keeps the web app awake: every 15 minutes, open it in a headless browser. A browser visit is real activity (a
+# plain HTTP request is not, on Streamlit Community Cloud), and if the app has gone to sleep this clicks its
+# "wake up" button. The address is the repository variable APP_URL, else the default below.
+name: Keep the app awake
 
 on:
   schedule:
@@ -12,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      SPACE_URL: https://shyam12321-thumbstop-engine.hf.space/
+      APP_URL: ${{ vars.APP_URL || 'https://thumbstop-engine.streamlit.app/' }}
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -21,20 +22,32 @@ jobs:
         run: |
           pip install playwright==1.55.0
           python -m playwright install --with-deps chromium
-      - name: Open the app
+      - name: Open the app (and wake it if it sleeps)
         run: |
           python - <<'EOF'
-          import os
+          import os, time
           from playwright.sync_api import sync_playwright
-          url = os.environ["SPACE_URL"]
+          url = os.environ["APP_URL"]
           with sync_playwright() as p:
               b = p.chromium.launch()
               page = b.new_page()
-              page.goto(url, timeout=240000)
-              try:
-                  page.wait_for_selector("text=Thumbstop Engine", timeout=240000)
-                  print("app is up:", url)
-              except Exception as e:
-                  print("opened, app not ready yet (it may be waking up):", e)
+              page.goto(url, timeout=120000)
+              time.sleep(5)
+              wake = page.get_by_role("button", name="Yes, get this app back up!")
+              if wake.count():
+                  print("app was asleep; waking it")
+                  wake.first.click()
+              deadline = time.time() + 240
+              up = False
+              while time.time() < deadline and not up:
+                  for f in page.frames:              # Streamlit Cloud shows the app inside a frame
+                      try:
+                          if f.get_by_text("Thumbstop Engine").count():
+                              up = True
+                              break
+                      except Exception:
+                          pass
+                  time.sleep(5)
+              print("app is up:" if up else "opened, app not ready yet:", url)
               b.close()
           EOF
