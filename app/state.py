@@ -25,8 +25,8 @@ def show(show_dir: str):
     return load_show(show_dir)
 
 
-@st.cache_resource
 def config() -> dict:
+    """Read config.yaml on every use (a tiny file), so a pushed config change applies without restarting the app."""
     return load_config()
 
 
