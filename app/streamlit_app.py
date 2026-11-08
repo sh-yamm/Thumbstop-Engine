@@ -23,8 +23,8 @@ for _k in ("HF_TOKEN", "THUMBSTOP_DATA_REPO", "NVIDIA_API_KEY", "THUMBSTOP_PUBLI
         _v = st.secrets.get(_k)
     except Exception:  # noqa: BLE001  (no secrets file, e.g. locally)
         _v = None
-    if _v and not os.environ.get(_k):
-        os.environ[_k] = str(_v)
+    if _v:                       # secrets win, so a corrected secret takes effect without a restart
+        os.environ[_k] = str(_v).strip()
 
 from app import state, ui  # noqa: E402
 from app.views import demo, how, live  # noqa: E402
