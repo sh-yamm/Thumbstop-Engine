@@ -479,6 +479,15 @@ Every real model call is also appended to `outputs/llm_calls.jsonl` (role, model
 
 ## 9. Repository structure
 
+**The main script is [`thumbstop/pipeline.py`](thumbstop/pipeline.py).** Its `run()` function calls every stage in order, from parsing the screenplays to the fact check, and writes every output file. Start reading there. Two entry points call it:
+
+| You run | Which calls | Which calls |
+|---|---|---|
+| `python -m thumbstop --show … --out …` (command line) | [`thumbstop/__main__.py`](thumbstop/__main__.py) → [`thumbstop/cli.py`](thumbstop/cli.py) (reads the flags) | `pipeline.run()` |
+| `streamlit run app/streamlit_app.py` (web app) | [`app/streamlit_app.py`](app/streamlit_app.py) → the Live run page ([`app/views/live.py`](app/views/live.py)) → [`app/runner.py`](app/runner.py) (a background thread); the Demo's replay ([`app/views/demo.py`](app/views/demo.py)) | `pipeline.run()` |
+
+`pipeline.run()` then calls the stage functions in [`thumbstop/stages/`](thumbstop/stages/), which call the models through [`thumbstop/llm/client.py`](thumbstop/llm/client.py); [`thumbstop/output.py`](thumbstop/output.py) writes the files.
+
 ```
 Thumbstop-Engine/
 ├── README.md                    this file
