@@ -165,7 +165,7 @@ flowchart LR
   K -- "high ad-policy risk" --> X[("excluded.json")]
   K --> RK["6 · Ranker<br/>3 shuffled calls · Nemotron 3 Ultra"]
   RK --> CP["7 · Captions<br/>1 call · Gemma 4<br/>(backup: Nemotron 3 Ultra)"]
-  CP --> FC["8 · Fact check<br/>1 call per promo · Mistral Large 4"]
+  CP --> FC["8 · Fact check<br/>1 call per promo · Mistral Large 4<br/>(backup: Nemotron 3 Ultra)"]
   FC --> O[("promos.json / .csv<br/>report.md · summary.json")]
   classDef ai fill:#b5502c,color:#fff,stroke:#8f3c1f;
   classDef code fill:#f7ede1,color:#2e1f17,stroke:#c9a88c;
@@ -190,7 +190,7 @@ flowchart LR
 | – | Selection | code | 0 |
 | 6 | Ranker | Nemotron 3 Ultra | 3 |
 | 7 | Captions | Gemma 4 31B (backup: Nemotron 3 Ultra) | 1 (+1 repair if needed) |
-| 8 | Fact check | Mistral Large 4 | about 30 (one per promo, plus a re-check for each fix) |
+| 8 | Fact check | Mistral Large 4 (backup: Nemotron 3 Ultra) | about 30 (one per promo, plus a re-check for each fix) |
 | | **Total** | | **about 150** |
 
 ---
@@ -426,10 +426,10 @@ Every role was tried with several free models on the same inputs, and the best o
 | Judge (`judge`) | StepFun Step 5 | the strictest and most consistent judge in the comparison, and a different family from the promo finder |
 | Ranker (`ranker`) | NVIDIA Nemotron 3 Ultra | reads about 50 cards at once, three times over, and is quick enough to do so |
 | Captions (`captions`) | Google Gemma 4 31B, backup Nemotron 3 Ultra | wrote the lines that read most like real ads; Nemotron (the previous caption writer) takes over if Gemma is down |
-| Fact check (`factcheck`) | Mistral Large 4, low reasoning effort | a different family from the caption writer; the low-effort setting made it about six times faster, and it was still the best fact checker |
+| Fact check (`factcheck`) | Mistral Large 4, low reasoning effort; backup Nemotron 3 Ultra | a different family from the caption writer; the low-effort setting made it about six times faster, and it was still the best fact checker. Nemotron takes over if Mistral is down |
 
 - **Swap a model:** edit one line under `roles:` in [`config.yaml`](config.yaml), or set `THUMBSTOP_MODEL_<ROLE>` for one run (e.g. `THUMBSTOP_MODEL_JUDGE=<model id>`).
-- **Backup model:** a role can name a `backup` (in `config.yaml`, or `THUMBSTOP_BACKUP_<ROLE>`). The main model then gets **one try per run**; if it fails with a server or connection error, the backup answers at once with the role's settings (not its `extra_body`), and the role's later calls in that run go straight to the backup. Captions use this because Gemma 4 on NVIDIA's free tier is sometimes unavailable: when it does not answer, Nemotron writes the lines, and `summary.json` says so under `backups_used`. See [§11](#11-calls-cache-rate-limits-and-run-modes) for why one try.
+- **Backup model:** a role can name a `backup` (in `config.yaml`, or `THUMBSTOP_BACKUP_<ROLE>`). The main model then gets **one try per run**; if it fails with a server or connection error, the backup answers at once with the role's settings (not its `extra_body`), and the role's later calls in that run go straight to the backup. Captions and the fact check use this, because Gemma 4 and Mistral Large 4 on NVIDIA's free tier are sometimes unavailable: when one does not answer, Nemotron writes the lines or checks them, and `summary.json` says so under `backups_used`. See [§11](#11-calls-cache-rate-limits-and-run-modes) for why one try.
 - **Fallbacks:** a role left empty (or `TBD`) borrows another role's model: `captions` → `proposer`, `factcheck` → `judge`, `montage` → `proposer`.
 - **Another provider:** any OpenAI-compatible endpoint works (OpenAI, Groq, OpenRouter, vLLM, …). Set `api.base_url` (or `THUMBSTOP_BASE_URL`) and `api.key_env`.
 - **Reasoning settings:** anything under a role's `extra_body` is passed through to the API, e.g. `extra_body: {reasoning_effort: low}`.
@@ -747,4 +747,5 @@ On the 50-episode assignment show (about 103 minutes of screen time, 3,727 timed
 - **One promo per episode** can leave out a second strong moment; raise `pipeline.keep_per_episode` to keep more.
 - **The ranker shares a model with the promo finder.** It sees the judge's scores, not the finder's reasoning, but a different family would be a more independent check.
 - **Free-tier models go down.** Gemma 4 was unreachable for hours during development (every request ended in NVIDIA's 504 after 300 seconds). Captions then come from the backup, Nemotron, so their style can differ from run to run; `summary.json` shows which model wrote them.
+- **When both Gemma 4 and Mistral Large 4 are down,** Nemotron is the backup for both, so it fact-checks captions it wrote itself. The check is then less independent; `summary.json` lists both under `backups_used`.
 - **The judge is a model.** Its scores are a filter, not ground truth, so an editor reviews the ranked list before anything is posted.

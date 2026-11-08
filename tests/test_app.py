@@ -166,8 +166,8 @@ from app import preflight, ui
 from app.views import live
 preflight.check_models = lambda cfg, timeout=30: [
     {{"model": "google/gemma-4-31b-it", "roles": ["captions"], "ok": False, "seconds": 30.0, "detail": "no answer"}},
-    {{"model": "nvidia/nemotron-3-ultra-550b-a55b", "roles": ["captions (backup)"], "ok": True, "seconds": 1.2,
-      "detail": "answering"}},
+    {{"model": "nvidia/nemotron-3-ultra-550b-a55b", "roles": ["captions (backup)", "factcheck (backup)"], "ok": True,
+      "seconds": 1.2, "detail": "answering"}},
     {{"model": "mistralai/mistral-large-4-1t-a52b", "roles": ["factcheck"], "ok": False, "seconds": 30.0,
       "detail": "no answer"}}]
 ui.inject_css()
@@ -176,8 +176,10 @@ live.page()
     next(b for b in at.button if b.label == "Check the models").click().run()
     assert not at.exception, [e.value for e in at.exception]
     assert len(at.dataframe) == 1
-    assert any("backup" in i.value for i in at.info)       # Gemma down -> Nemotron writes the captions
-    assert any("Mistral" in w.value for w in at.warning)   # and, separately, the slow fact checker is named
+    infos = " ".join(i.value for i in at.info)
+    assert "write the captions" in infos                    # Gemma down -> Nemotron writes the captions
+    assert "do the fact check" in infos                     # Mistral down -> Nemotron does the fact check
+    assert not at.warning                                    # both are covered by a working backup
 
 
 @pytest.mark.skipif(not data.locate(download=False).ready, reason="needs the delivered run (data/run/)")

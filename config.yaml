@@ -28,7 +28,7 @@ roles:
   # backup: the main model gets ONE try; on a server or connection error (NVIDIA answers a model that is down with
   # a bare 504 after 300 s) the backup answers instead, with the role's settings. Set THUMBSTOP_BACKUP_<ROLE> to override.
   factcheck:  {model: mistralai/mistral-large-4-1t-a52b, temperature: 0.0, max_tokens: 6000,
-               extra_body: {reasoning_effort: low}}
+               extra_body: {reasoning_effort: low}, backup: nvidia/nemotron-3-ultra-550b-a55b}
   # Unset/TBD roles fall back: captions -> proposer, factcheck -> judge, montage -> proposer (thumbstop/llm/client.py).
 
 pipeline:

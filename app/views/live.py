@@ -33,17 +33,22 @@ def _model_check(cfg: dict) -> None:
                      "seconds": r["seconds"], "status": r["detail"]} for r in res]
             st.dataframe(rows, hide_index=True, width="stretch")
             down = {r["model"] for r in res if not r["ok"]}
-            cap = (cfg["roles"].get("captions") or {})
-            others = [r for r in res if not r["ok"] and r["model"] != cap.get("model")]
-            if cap.get("model") in down and cap.get("backup") not in down:
-                st.info(f"{ui.model_name(cap['model'])} is not answering, so the captions will be written by its "
-                        f"backup, {ui.model_name(cap.get('backup'))}, after one try (about 5 minutes).")
-            if others:
-                names = ", ".join(f"{ui.model_name(r['model'])} ({', '.join(r['roles'])})" for r in others)
-                st.warning(f"No answer within 30 seconds from {names}. On the free tier this is often a queue rather "
-                           "than an outage (a fact check has taken up to 5 minutes), so a run waits for it. If it "
-                           "stays down, the promos found before that stage are still saved; captions that cannot be "
-                           "fact-checked are hidden.")
+            jobs = {"captions": "write the captions", "factcheck": "do the fact check"}
+            uncovered: dict[str, list[str]] = {}
+            for role, rc in cfg["roles"].items():
+                main, backup = (rc or {}).get("model"), (rc or {}).get("backup")
+                if main not in down:
+                    continue
+                if backup and backup not in down:     # this role has a working backup
+                    st.info(f"{ui.model_name(main)} is not answering, so its backup, {ui.model_name(backup)}, will "
+                            f"{jobs.get(role, 'do the ' + role)} after one try (about 5 minutes).")
+                else:
+                    uncovered.setdefault(main, []).append(role)
+            if uncovered:
+                names = ", ".join(f"{ui.model_name(m)} ({', '.join(roles)})" for m, roles in uncovered.items())
+                st.warning(f"No answer within 30 seconds from {names}, which has no working backup. On the free tier "
+                           "this is often a queue rather than an outage, so a run waits for it. If it stays down, "
+                           "the promos found before that stage are still saved.")
             if not down:
                 st.success("Every model is answering.")
 
