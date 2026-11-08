@@ -10,6 +10,7 @@ the page in a headless browser on the same schedule; that is a real visit and wa
 """
 from __future__ import annotations
 
+import http.cookiejar
 import json
 import os
 import threading
@@ -50,12 +51,14 @@ class KeepAlive:
         self.last_status = "not started"
         self.pings = 0
         self._stop = threading.Event()
+        # keep cookies like a browser: Streamlit Cloud redirects a first visit to set one and expects it back
+        self._opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
 
     def ping_once(self) -> str:
         """One visit to the page; returns 'HTTP 200' or the error, and records it. Never raises."""
         try:
             req = urllib.request.Request(self.url, headers={"User-Agent": "thumbstop-keepalive/1.0"})
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with self._opener.open(req, timeout=60) as resp:
                 self.last_status = f"HTTP {resp.status}"
         except Exception as e:  # noqa: BLE001
             self.last_status = f"{type(e).__name__}: {e}"[:120]

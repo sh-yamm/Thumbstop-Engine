@@ -109,6 +109,29 @@ def test_keepalive_visits_the_page_and_records_it(tmp_path, monkeypatch):
         srv.shutdown()
 
 
+def test_keepalive_follows_a_cookie_redirect_like_streamlit_cloud():
+    """Streamlit Cloud answers a first visit with a 303 that sets a cookie and expects it back; without a cookie jar
+    that is an endless redirect (HTTP Error 303 ... infinite loop)."""
+    class CookieGate(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            if "visited=1" in (self.headers.get("Cookie") or ""):
+                self.send_response(200)
+            else:
+                self.send_response(303)
+                self.send_header("Set-Cookie", "visited=1; Path=/")
+                self.send_header("Location", "/")
+            self.end_headers()
+
+        def log_message(self, *a):
+            pass
+    srv = http.server.HTTPServer(("127.0.0.1", 0), CookieGate)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        assert keepalive.KeepAlive(f"http://127.0.0.1:{srv.server_port}/").ping_once() == "HTTP 200"
+    finally:
+        srv.shutdown()
+
+
 def test_keepalive_is_off_outside_a_space(monkeypatch, capsys):
     monkeypatch.delenv("SPACE_HOST", raising=False)
     keepalive.main()                                          # returns at once instead of looping

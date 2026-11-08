@@ -272,12 +272,6 @@ def load_json(path: Path, default=None):
         return default
 
 
-def footer(source: str, keepalive: dict | None = None) -> None:
-    import time as _t
-    if keepalive and keepalive.get("last_ping"):
-        ka = (f" · keep-awake: {esc(keepalive.get('status'))}, last visit "
-              f"{int((_t.time() - keepalive['last_ping']) / 60)} min ago (every {keepalive.get('every_minutes', 15):g} min)")
-    else:
-        ka = " · keep-awake: starts on the hosted app"
-    st.markdown(f'<div class="tse-foot">Thumbstop Engine · data: {esc(source)}{ka} · '
+def footer() -> None:
+    st.markdown(f'<div class="tse-foot">Thumbstop Engine · '
                 f'<a href="{GITHUB}" target="_blank">source code on GitHub</a></div>', unsafe_allow_html=True)

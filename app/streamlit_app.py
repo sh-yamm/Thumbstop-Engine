@@ -31,7 +31,7 @@ from app.views import demo, how, live  # noqa: E402
 
 st.set_page_config(page_title="Thumbstop Engine", page_icon="🎬", layout="wide")
 ui.inject_css()
-keep = state.keep_awake()      # status of the 15-minute keep-awake process (deploy/Dockerfile starts it)
+state.keep_awake()             # starts the 15-minute visits once (in Docker a separate process does them)
 
 nav = st.navigation([
     st.Page(demo.page, title="Demo", icon=":material/play_circle:", default=True),
@@ -39,4 +39,4 @@ nav = st.navigation([
     st.Page(how.page, title="How it works", icon=":material/account_tree:", url_path="how-it-works"),
 ], position="top")
 nav.run()
-ui.footer(state.paths().source, keep)
+ui.footer()
