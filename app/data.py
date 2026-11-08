@@ -68,7 +68,9 @@ def locate(download: bool = True) -> DataPaths:
         except Exception as e:  # noqa: BLE001  (shown in the app instead of a crash)
             return DataPaths(None, None, None, f"could not download {repo}: {type(e).__name__}: {e}"[:300])
     if (data_dir / "run" / "promos.json").exists():
-        return _from(data_dir, f"private dataset {repo}" if repo else str(data_dir))
+        label = (f"private dataset {repo}" if repo else
+                 "the repository's data/ folder" if data_dir.resolve() == (ROOT / "data").resolve() else str(data_dir))
+        return _from(data_dir, label)
     run = ROOT / "outputs" / "final_run"
     cache = ROOT / ".cache"
     return DataPaths(first_show(ROOT / "pack"), run if run.is_dir() else None, cache if cache.is_dir() else None,

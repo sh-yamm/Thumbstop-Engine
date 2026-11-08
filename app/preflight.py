@@ -45,7 +45,7 @@ def check_models(cfg: dict, timeout: float = 30.0, client=None) -> list[dict]:
                     "detail": "answering"}
         except Exception as e:  # noqa: BLE001
             secs = round(time.time() - t, 1)
-            detail = ("no answer within %ds (likely down or queued on the free tier)" % timeout
+            detail = ("no answer in %ds (busy or down)" % timeout
                       if "Timeout" in type(e).__name__ else f"{type(e).__name__}: {e}"[:160])
             return {"model": model, "roles": roles, "ok": False, "seconds": secs, "detail": detail}
 

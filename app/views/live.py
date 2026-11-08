@@ -23,7 +23,8 @@ def _model_check(cfg: dict) -> None:
     with st.container(border=True):
         st.markdown("**1 · Check the models**  \nOne tiny request to every model the pipeline uses, all at once "
                     "(about 30 seconds). Free-tier models can be down for hours.")
-        if st.button("Check the models", key="preflight", disabled=not state.has_key()):
+        # the button's key must differ from the session-state key that holds the results
+        if st.button("Check the models", key="preflight_button", disabled=not state.has_key()):
             with st.spinner("Asking every model to reply…"):
                 st.session_state["preflight"] = preflight.check_models(cfg, timeout=30)
         res = st.session_state.get("preflight")
@@ -33,13 +34,17 @@ def _model_check(cfg: dict) -> None:
             st.dataframe(rows, hide_index=True, width="stretch")
             down = {r["model"] for r in res if not r["ok"]}
             cap = (cfg["roles"].get("captions") or {})
+            others = [r for r in res if not r["ok"] and r["model"] != cap.get("model")]
             if cap.get("model") in down and cap.get("backup") not in down:
                 st.info(f"{ui.model_name(cap['model'])} is not answering, so the captions will be written by its "
                         f"backup, {ui.model_name(cap.get('backup'))}, after one try (about 5 minutes).")
-            elif down - {cap.get("model")}:
-                st.warning("A model the pipeline needs is not answering. A run may wait for it or fail at that stage; "
-                           "the promos found before it are still saved.")
-            else:
+            if others:
+                names = ", ".join(f"{ui.model_name(r['model'])} ({', '.join(r['roles'])})" for r in others)
+                st.warning(f"No answer within 30 seconds from {names}. On the free tier this is often a queue rather "
+                           "than an outage (a fact check has taken up to 5 minutes), so a run waits for it. If it "
+                           "stays down, the promos found before that stage are still saved; captions that cannot be "
+                           "fact-checked are hidden.")
+            if not down:
                 st.success("Every model is answering.")
 
 

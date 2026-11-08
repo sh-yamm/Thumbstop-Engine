@@ -132,6 +132,69 @@ def test_model_check_reports_each_model_and_its_backup():
 
 
 @pytest.mark.skipif(not data.locate(download=False).ready, reason="needs the delivered run (data/run/)")
+def test_check_the_models_button_shows_results(monkeypatch):
+    """Clicking 'Check the models' stores and shows the results (its widget key must not clash with the state key)."""
+    pytest.importorskip("streamlit")
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("NVIDIA_API_KEY", "dummy")
+    at = AppTest.from_string(f"""
+import sys; sys.path.insert(0, {str(data.ROOT)!r})
+from app import preflight, ui
+from app.views import live
+preflight.check_models = lambda cfg, timeout=30: [
+    {{"model": "google/gemma-4-31b-it", "roles": ["captions"], "ok": False, "seconds": 30.0, "detail": "no answer"}},
+    {{"model": "nvidia/nemotron-3-ultra-550b-a55b", "roles": ["captions (backup)"], "ok": True, "seconds": 1.2,
+      "detail": "answering"}},
+    {{"model": "mistralai/mistral-large-4-1t-a52b", "roles": ["factcheck"], "ok": False, "seconds": 30.0,
+      "detail": "no answer"}}]
+ui.inject_css()
+live.page()
+""", default_timeout=120).run()
+    next(b for b in at.button if b.label == "Check the models").click().run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert len(at.dataframe) == 1
+    assert any("backup" in i.value for i in at.info)       # Gemma down -> Nemotron writes the captions
+    assert any("Mistral" in w.value for w in at.warning)   # and, separately, the slow fact checker is named
+
+
+@pytest.mark.skipif(not data.locate(download=False).ready, reason="needs the delivered run (data/run/)")
+def test_start_button_runs_the_pipeline_and_shows_the_promos(monkeypatch, tmp_path):
+    """Clicking 'Start the live run' (with a fake model) runs in the background; the page then shows the promos."""
+    pytest.importorskip("streamlit")
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("NVIDIA_API_KEY", "dummy")
+    monkeypatch.setenv("THUMBSTOP_RUNS_DIR", str(tmp_path))
+    script = f"""
+import sys; sys.path.insert(0, {str(data.ROOT)!r})
+import streamlit as st
+from app import state, ui
+from app.views import live
+from test_pipeline_fake import FakeLLM
+if "fresh_manager" not in st.session_state:      # each session: a run manager reading this test's folder
+    state.manager.clear()
+    st.session_state.fresh_manager = True
+live.LLM = lambda cfg, fresh=True: FakeLLM()
+ui.inject_css()
+live.page()
+"""
+    at = AppTest.from_string(script, default_timeout=120).run()
+    next(b for b in at.button if b.label == "Start the live run").click().run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert any("Running" in m.value for m in at.markdown)              # the progress view replaced the form
+    deadline = time.time() + 60
+    states = []
+    while time.time() < deadline:
+        states = [json.loads(p.read_text(encoding="utf-8")) for p in tmp_path.glob("*/state.json")]
+        if states and states[0]["status"] != "running":
+            break
+        time.sleep(0.3)
+    assert states and states[0]["status"] == "done", states and states[0].get("error")
+    again = AppTest.from_string(script, default_timeout=120).run()    # a visitor opening the page afterwards
+    assert not again.exception, [e.value for e in again.exception]
+    assert any("Finished" in s.value for s in again.success)
+
+
+@pytest.mark.skipif(not data.locate(download=False).ready, reason="needs the delivered run (data/run/)")
 @pytest.mark.parametrize("page", ["demo", "live", "how"])
 def test_every_page_renders(page, monkeypatch):
     pytest.importorskip("streamlit")
