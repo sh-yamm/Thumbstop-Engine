@@ -2,6 +2,8 @@
 
 **Finds the best promos in a microdrama, straight from its screenplay.**
 
+**Try it: [thumbstop-engine.streamlit.app](https://thumbstop-engine.streamlit.app).** *Demo* opens on a finished 50-episode run and can replay every stage; *Live run* runs the pipeline with real model calls ([§13](#13-the-web-app-demo-and-live-run)).
+
 Thumbstop Engine reads a folder of episode screenplays (one show) and finds the clips worth posting as ads on TikTok, Reels and Shorts. A good promo:
 
 - is **20–60 seconds** long;
