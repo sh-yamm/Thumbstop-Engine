@@ -87,6 +87,38 @@ def test_headline_counts_the_promo_finders_proposals_not_montages(tmp_path):
     assert ui.episode_proposals(tmp_path / "missing") == "–"
 
 
+def test_fonts_and_images_are_served_with_their_headers(tmp_path):
+    """Streamlit 1.58's gzip middleware with Starlette 1.10 sends a font's or image's body before its headers, and the
+    server aborts the request ("Expected ASGI message 'http.response.start'"). app/requirements.txt pins Starlette."""
+    import asyncio
+
+    from starlette.responses import FileResponse
+    from streamlit.web.server.starlette.starlette_gzip_middleware import MediaAwareGZipMiddleware
+
+    async def serve(name, ctype):
+        path = tmp_path / name
+        path.write_bytes(b"x" * 5000)
+        app = MediaAwareGZipMiddleware(FileResponse(path, media_type=ctype), minimum_size=500)
+        order, asked = [], []
+
+        async def receive():
+            if not asked:
+                asked.append(1)
+                return {"type": "http.request", "body": b"", "more_body": False}
+            await asyncio.Event().wait()
+
+        async def send(msg):
+            order.append(msg["type"])
+
+        scope = {"type": "http", "method": "GET", "path": f"/~/+/static/{name}", "query_string": b"",
+                 "headers": [(b"accept-encoding", b"gzip")], "root_path": ""}
+        await asyncio.wait_for(app(scope, receive, send), 10)
+        return order
+
+    for name, ctype in (("f.woff2", "font/woff2"), ("i.png", "image/png"), ("a.js", "text/javascript")):
+        assert asyncio.run(serve(name, ctype))[0] == "http.response.start", name
+
+
 def test_estimate_grows_with_episodes():
     assert estimate_minutes(2, True, False)[0] < estimate_minutes(10, True, False)[0]
     assert estimate_minutes(2, False, False)[0] > estimate_minutes(2, True, False)[0]

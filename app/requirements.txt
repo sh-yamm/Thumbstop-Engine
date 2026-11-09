@@ -1,4 +1,6 @@
 openai>=2.0
 PyYAML>=6.0
 streamlit==1.58.0
+# Streamlit 1.58's gzip middleware breaks fonts and images with Starlette 1.10 (body sent before headers)
+starlette==1.0.0
 huggingface_hub>=1.0
