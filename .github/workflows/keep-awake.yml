@@ -10,7 +10,8 @@ on:
 
 jobs:
   visit:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where Playwright can't install Chromium yet.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       APP_URL: ${{ vars.APP_URL || 'https://thumbstop-engine.streamlit.app/' }}
@@ -18,10 +19,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install a headless browser
+      # The runner already has Google Chrome, so no system packages are installed. Playwright's own Chromium is
+      # downloaded only as a fallback.
+      - name: Install Playwright
+        timeout-minutes: 4
         run: |
           pip install playwright==1.55.0
-          python -m playwright install --with-deps chromium
+          google-chrome --version || python -m playwright install chromium
       - name: Open the app (and wake it if it sleeps)
         run: |
           python - <<'EOF'
@@ -29,7 +33,10 @@ jobs:
           from playwright.sync_api import sync_playwright
           url = os.environ["APP_URL"]
           with sync_playwright() as p:
-              b = p.chromium.launch()
+              try:
+                  b = p.chromium.launch(channel="chrome")  # the runner's Google Chrome
+              except Exception:
+                  b = p.chromium.launch()  # Playwright's own Chromium
               page = b.new_page()
               page.goto(url, timeout=120000)
               time.sleep(5)
